@@ -23,6 +23,44 @@ public class Lexical_analyzer {
     private static final int LEXICAL_ERROR = 2;
     
 
+    private static int terme(char tc){
+        if (tc == '_') {
+            return 0;
+        }
+        if ((tc >= 'a' && tc <= 'z')||(tc >= 'A' && tc <= 'Z')) {
+            return 1;
+        }
+        if (tc >= 0 && tc <= 9) {
+            return 2;
+        }
+
+        return -1;
+    }
+
+    //Identifier indicator
+    private static boolean unitIsIdentifer(String lexical_unit){
+        int[][] matrice  = {{1,2,-1},
+        {2,2,1},
+        {1,1,1}};
+
+        lexical_unit = lexical_unit + "#";
+        int i = 0;
+        int etat_courant = 0;
+        int vf = 2;
+        while (lexical_unit.charAt(i) != '#' && matrice[etat_courant][terme(lexical_unit.charAt(i))] != -1) {
+
+            etat_courant = matrice[etat_courant][terme(lexical_unit.charAt(i))];
+
+            i++;
+        }
+
+         if ((lexical_unit.charAt(i) == '#' && etat_courant == vf) && i == lexical_unit.length()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public static String unitType(String lexical_unit){
         
         for (String keyword : KEYWORDS) {
@@ -46,6 +84,9 @@ public class Lexical_analyzer {
             }
         }
         
+        if (unitIsIdentifer(lexical_unit)) {
+            return "IDENTIFIER";
+        }
 
         //CALL ERROR FUNCTION HERE !!!!
 
