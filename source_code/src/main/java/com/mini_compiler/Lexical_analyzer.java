@@ -23,6 +23,14 @@ public class Lexical_analyzer {
     private static final int LEXICAL_ERROR = 2;
     
 
+    private static int terme_int(char tc){
+        if (tc >= 0 && tc <= 9) {
+            return 0;
+        }
+        return 1;
+    }
+
+    //current character checker terme-courant
     private static int terme(char tc){
         if (tc == '_') {
             return 0;
@@ -33,15 +41,15 @@ public class Lexical_analyzer {
         if (tc >= 0 && tc <= 9) {
             return 2;
         }
-
-        return -1;
+        return 3;
     }
 
-    //Identifier indicator
+    //Identifier indicator using the matrix way
     private static boolean unitIsIdentifer(String lexical_unit){
-        int[][] matrice  = {{1,2,-1},
-        {2,2,1},
-        {1,1,1}};
+        int[][] matrice  = {
+        {1,2,-1,-1},
+        {2,2,1,-1},
+        {1,1,1,-1}};
 
         lexical_unit = lexical_unit + "#";
         int i = 0;

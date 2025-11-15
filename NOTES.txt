@@ -1,0 +1,32 @@
+Lexical Analyzer:
+
+1- Need to complete the Analyzer method
+    -> Ignoring blanks and comments
+    -> 
+
+2- Define and handle Error Types
+    -> final integers for each type of Error
+    -> puting error method calls in the right places.
+    -> 
+
+
+3- Test each part of the code separatedly
+
+Error handler :
+
+1- Define the output to show as a String 
+    -> Differenet statements depending on the type of error
+    -> Show: line,error description,lexical unit
+
+2- Output statement choosing method
+    -> check which errortype
+    -> set the right output 
+
+3- Output method
+    -> pass the chosen statement to interface/window and show it
+    -> ensure it works for every type of error
+
+
+Syntax Analyzer:
+
+1- Prepare Grammar
