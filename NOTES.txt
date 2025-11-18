@@ -10,7 +10,6 @@ Lexical Analyzer:
     -> 
 
 
-3- Test each part of the code separatedly
 
 Error handler :
 

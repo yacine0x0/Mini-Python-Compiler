@@ -17,10 +17,6 @@ public class Lexical_analyzer {
             "float", "complex", "str", "bool" };
 
     private static final String[] SPECIAL_KEYWORD = { "Yacine", "Madani" };
-    private static final String[] OPERATORS = { "+", "-", "*", "/", "%", "++", "--", "==", "!=", "<", ">", "<=", ">=",
-            "and", "or", "!", "=" };
-
-    private static final String[] SEPARATORS = { "(", ")", "{", "}", "[", "]", ",", ";", ":", ".", "'", "\"" };
 
     private static final int LEXICAL_ERROR = 2;
 
@@ -180,7 +176,9 @@ public class Lexical_analyzer {
     }
 
     public static String Tokenizer(String lexical_unit) {
-
+        if (lexical_unit != " ") {
+            
+        
         for (String keyword : KEYWORDS) {
             if (lexical_unit == keyword) {
                 return "KEYWORD";
@@ -189,16 +187,6 @@ public class Lexical_analyzer {
         for (String special : SPECIAL_KEYWORD) {
             if (lexical_unit == special) {
                 return "SPECIAL_KEYWORD";
-            }
-        }
-        for (String operator : OPERATORS) {
-            if (lexical_unit == operator) {
-                return "OPERATOR";
-            }
-        }
-        for (String separator : SEPARATORS) {
-            if (lexical_unit == separator) {
-                return "SEPARATOR";
             }
         }
 
@@ -219,24 +207,85 @@ public class Lexical_analyzer {
 
         return "error";
     }
+    return null;
+    }
+
+
+    private static boolean terme_separator(char tc){
+        if (tc == ';') {
+            return true;
+        }
+        if (tc == ',') {
+            return true;
+        }
+        if (tc == '\'') {
+            return true;
+        }
+        if (tc == ':') {
+            return true;
+        }
+        if (tc == '(') {
+            return true;
+        }
+        if (tc == ')') {
+            return true;
+        }
+        if (tc == '{') {
+            return true;
+        }
+        if (tc == '}') {
+            return true;
+        }
+        if (tc == '[') {
+            return true;
+        }
+        if (tc == ']') {
+            return true;
+        }
+
+
+        
+        return false;
+    }
+    
+    //"+", "-", "*", "/", "%", "++", "--", "==", "!=", "<", ">", "<=", ">=", "and", "or", "!", "=" 
+           
+
 
     // --- Method to analyze the given code ---
 
     public static void Analyzer() throws FileNotFoundException {
         String lexical_unit = "";
         String input = "";
-        int i = 0;
+        int index = 0;
 
         // Reading input from a file "code.dat"
         try {
             Scanner scan = new Scanner(new File("Mini-Compilateur-Python/executable/code.dat"));
 
             while (scan.hasNextLine()) {
-                input = scan.nextLine() + "#";
-                i = 0;
+                input = scan.nextLine() + " ^"; //the character ^ means the end of a line
+                index = 0;
 
-                while (input.charAt(i) != '#') {
-
+                while (input.charAt(index) != '^' && input.charAt(index) != '#') {
+                //# is for the beginning of a comment so we ignore the whole line
+                    if(input.charAt(index) != ' ') {
+                        while (terme_separator(input.charAt(index)) || input.charAt(index)==' ') {
+                            if (input.charAt(index)==' ') {
+                                index++;
+                                continue;
+                            }
+                            //indicating separator to the units vector and saving it there
+                            index++;
+                        }
+                        lexical_unit = lexical_unit + input.charAt(index);
+                    }
+                    else
+                    {if (index > 0) {
+                        Tokenizer(lexical_unit);
+                        lexical_unit = "";
+                    }}
+                    index++;
                 }
 
             }
