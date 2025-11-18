@@ -1,5 +1,8 @@
 package com.mini_compiler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Yacine Madani
  * @version 1.0
@@ -17,6 +20,9 @@ public class Lexical_analyzer {
             "float", "complex", "str", "bool" };
 
     private static final String[] SPECIAL_KEYWORD = { "Yacine", "Madani" };
+    private static final String[] LOGICAL_OPERATORS = {"and","or","not"};
+
+    private static List<String[]> TOKENS = new ArrayList<>(); //list to store tokens
 
     private static final int LEXICAL_ERROR = 2;
 
@@ -188,7 +194,12 @@ public class Lexical_analyzer {
             if (lexical_unit == special) {
                 return "SPECIAL_KEYWORD";
             }
+        } for (String logical : LOGICAL_OPERATORS) {
+            if (lexical_unit == logical) {
+                return "LOGICAL_OPERATOR";
+            }
         }
+
 
         if (unitIsIdentifer(lexical_unit)) {
             return "IDENTIFIER";
@@ -210,7 +221,7 @@ public class Lexical_analyzer {
     return null;
     }
 
-
+    //separator tokenizer it indicates if it's , or ; or ...etc and it extracts it as a token
     private static boolean terme_separator(char tc){
         if (tc == ';') {
             return true;
@@ -248,8 +259,37 @@ public class Lexical_analyzer {
         return false;
     }
     
-    //"+", "-", "*", "/", "%", "++", "--", "==", "!=", "<", ">", "<=", ">=", "and", "or", "!", "=" 
-           
+    //operator tokenizer it indicates when there's a + or - or ...etc and extracts it as a token
+    private static boolean terme_operator(char tc){
+        if (tc == '+') {
+            return true;
+        }
+        if (tc == '-') {
+            return true;
+        }
+         if (tc == '*') {
+            return true;
+        }
+         if (tc == '/') {
+            return true;
+        }
+         if (tc == '%') {
+            return true;
+        }
+         if (tc == '=') {
+            return true;
+        }
+         if (tc == '!') {
+            return true;
+        }
+         if (tc == '>') {
+            return true;
+        }
+         if (tc == '<') {
+            return true;
+        }
+        return false;
+    }   
 
 
     // --- Method to analyze the given code ---
@@ -275,14 +315,23 @@ public class Lexical_analyzer {
                                 index++;
                                 continue;
                             }
-                            //indicating separator to the units vector and saving it there
+                            TOKENS.add(new String[] {Character.toString(index),"SEPARATOR"});
+                            index++;
+                        }
+                        while (terme_operator(input.charAt(index)) || input.charAt(index)==' ') {
+
+                            if (input.charAt(index)==' ') {
+                                index++;
+                                continue;
+                            }
+                           TOKENS.add(new String[] {Character.toString(index),"OPERATOR"});
                             index++;
                         }
                         lexical_unit = lexical_unit + input.charAt(index);
                     }
                     else
                     {if (index > 0) {
-                        Tokenizer(lexical_unit);
+                        TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
                         lexical_unit = "";
                     }}
                     index++;
