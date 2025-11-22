@@ -213,7 +213,9 @@ public class Lexical_analyzer {
         if (constantIsInteger(lexical_unit)) {
             return "INETEGER";
         }
-
+        if (constantIsString(lexical_unit)) {
+            return "STRING";
+        }
         // CALL ERROR FUNCTION HERE !!!!
 
         return "error";
@@ -291,6 +293,35 @@ public class Lexical_analyzer {
         return false;
     }   
 
+    private static int terme_string(char tc){
+        if (tc == '"') {
+            return 0;
+        }
+        return 1;
+    }
+
+    private static boolean constantIsString(String lexical_unit){
+        lexical_unit = lexical_unit + "#";
+        int i = 0;
+        int etat_courant = 0;
+        int vf = 2;
+        int[][] matrice = {
+            {1,-1},
+            {2,1},
+            {-1,-1}
+        };
+        while (lexical_unit.charAt(i) != '#' && matrice[etat_courant][terme_string(lexical_unit.charAt(i))] != -1) {
+
+            etat_courant = matrice[etat_courant][terme_string(lexical_unit.charAt(i))];
+            i++;
+        }
+
+        if ((lexical_unit.charAt(i) == '#' && etat_courant == vf) && i == lexical_unit.length() - 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     // --- Method to analyze the given code ---
 
