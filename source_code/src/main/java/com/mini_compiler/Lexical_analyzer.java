@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
-
+import java.net.URISyntaxException;
 public class Lexical_analyzer {
 
     private static final String[] KEYWORDS = { "if", "else", "switch", "while", "do", "class", "import", "break",
@@ -294,43 +294,52 @@ public class Lexical_analyzer {
 
     // --- Method to analyze the given code ---
 
-    public static void Analyzer() throws FileNotFoundException {
+    public static void Analyzer() throws FileNotFoundException, URISyntaxException {
         String lexical_unit = "";
         String input = "";
         int index = 0;
 
-        // Reading input from a file "code.dat"
-        try {
-            Scanner scan = new Scanner(new File("Mini-Compilateur-Python/executable/code.dat"));
+        //setting up file path
+        String jarDir = new File(
+        Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
 
-            while (scan.hasNextLine()) {
+        File file = new File(jarDir, "code.py");
+
+       
+
+        // Scanning input from a file "code.py" located in "executable" folder
+        try {
+            Scanner scan = new Scanner(file);
+            while (scan.hasNextLine()) { //extracting line by line from code.py
                 input = scan.nextLine() + " ^"; //the character ^ means the end of a line
                 index = 0;
 
                 while (input.charAt(index) != '^' && input.charAt(index) != '#') {
                 //# is for the beginning of a comment so we ignore the whole line
                     if(input.charAt(index) != ' ') {
-                        while (terme_separator(input.charAt(index)) || input.charAt(index)==' ') {
-                            if (input.charAt(index)==' ') {
-                                index++;
-                                continue;
-                            }
-                            TOKENS.add(new String[] {Character.toString(index),"SEPARATOR"});
-                            index++;
-                        }
-                        while (terme_operator(input.charAt(index)) || input.charAt(index)==' ') {
 
+                     while (terme_separator(input.charAt(index))) {
                             if (input.charAt(index)==' ') {
                                 index++;
                                 continue;
                             }
-                           TOKENS.add(new String[] {Character.toString(index),"OPERATOR"});
-                            index++;
+                         TOKENS.add(new String[] {Character.toString(index),"SEPARATOR"});
+                         index++;
                         }
+                     while (terme_operator(input.charAt(index))) {
+                            if (input.charAt(index)==' ') {
+                                index++;
+                                continue;
+                            }
+
+                         TOKENS.add(new String[] {Character.toString(index),"OPERATOR"});
+                         index++;
+                        }
+
                         lexical_unit = lexical_unit + input.charAt(index);
                     }
                     else
-                    {if (index > 0) {
+                    {if (lexical_unit.length() > 0) {// to avoid empty strings as tokens
                         TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
                         lexical_unit = "";
                     }}

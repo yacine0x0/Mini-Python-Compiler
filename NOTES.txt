@@ -1,15 +1,16 @@
 Lexical Analyzer:
 
-1- Need to complete the Analyzer method
-    -> Ignoring blanks and comments
-    -> 
-
 2- Define and handle Error Types
     -> final integers for each type of Error
     -> puting error method calls in the right places.
     -> 
 
+3- Add other constant indicator methods
+ 
+4- TEST THE ANALYZER !!!
 
+5- Optimize the code 
+    -> One indicator method different matrixes
 
 Error handler :
 
