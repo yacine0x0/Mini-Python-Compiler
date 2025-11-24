@@ -26,54 +26,6 @@ public class Lexical_analyzer {
 
     private static final int LEXICAL_ERROR = 2;
 
-    // current character checker for complex indicator only
-    private static int terme_complex(char tc) {
-        if (tc >= '0' && tc <= '9') {
-            return 0;
-        }
-        if (tc == '.') {
-            return 1;
-        }
-        if (tc == '+') {
-            return 2;
-        }
-        if (tc == 'j') {
-            return 3;
-        }
-        return 4;
-    }
-
-    // Complex data type indicator
-    private static boolean constantIsComplex(String lexical_unit) {
-        int[][] matrice = {
-                { 1, -1, -1, -1, -1 },
-                { 1, 3, 2, -1, -1 },
-                { 5, -1, -1, -1, -1 },
-                { 4, -1, -1, -1, -1 },
-                { 4, -1, 2, -1, -1 },
-                { 5, 6, -1, 8, -1 },
-                { 7, -1, -1, -1, -1 },
-                { 7, -1, -1, 8, -1 },
-                { -1, -1, -1, -1, -1 } };
-
-        lexical_unit = lexical_unit + "#";
-        int i = 0;
-        int etat_courant = 0;
-        int vf = 8;
-        while (lexical_unit.charAt(i) != '#' && matrice[etat_courant][terme_complex(lexical_unit.charAt(i))] != -1) {
-
-            etat_courant = matrice[etat_courant][terme_complex(lexical_unit.charAt(i))];
-
-            i++;
-        }
-
-        if ((lexical_unit.charAt(i) == '#' && etat_courant == vf) && i == lexical_unit.length()-1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     // current character checker for float indicator only
     private static int terme_float(char tc) {
         if (tc >= '0' && tc <= '9') {
@@ -182,39 +134,35 @@ public class Lexical_analyzer {
     }
 
     public static String Tokenizer(String lexical_unit) {
-        if (lexical_unit != "" && lexical_unit != " ") {
+        if (!lexical_unit.isEmpty() && !lexical_unit.equals(" ")) {
             
         
         for (String keyword : KEYWORDS) {
-            if (lexical_unit == keyword) {
+            if (lexical_unit.equals(keyword)) {
                 return "KEYWORD";
             }
         }
         for (String special : SPECIAL_KEYWORD) {
-            if (lexical_unit == special) {
+            if (lexical_unit.equals(special)) {
                 return "SPECIAL_KEYWORD";
             }
         } 
         for (String logical : LOGICAL_OPERATORS) {
-            if (lexical_unit == logical) {
+            if (lexical_unit.equals(logical)) {
                 return "LOGICAL_OPERATOR";
+                
             }
         }
 
-        if (lexical_unit == "False") {
-            return "False";
+
+        if (lexical_unit.equals("False") || lexical_unit.equals("True")) {
+            return "BOOLEAN";
         }
-        if (lexical_unit == "True") {
-            return "True";
-        }
-        if (lexical_unit == "None") {
+        if (lexical_unit.equals("None")) {
             return "None";
         }
         if (unitIsIdentifer(lexical_unit)) {
             return "IDENTIFIER";
-        }
-        if (constantIsComplex(lexical_unit)) {
-            return "COMPLEX";
         }
         if (constantIsFloat(lexical_unit)) {
             return "FLOAT";
@@ -229,7 +177,7 @@ public class Lexical_analyzer {
 
         return "error";
     }
-    return null;
+    return "error";
     }
 
     //separator tokenizer it indicates if it's , or ; or ...etc and it extracts it as a token
@@ -365,70 +313,75 @@ public class Lexical_analyzer {
                 if (scanning_string && (scanning_string_line != count_lines)) {
                     //error to call here: unclosed string
                 }    
+                char tc = input.charAt(index);
 
-                if (scanning_string && input.charAt(index)!='^') {
-                    lexical_unit = lexical_unit + input.charAt(index);
-                    index++;
+                              // Skip spaces
+                  if (tc == ' ' || tc == '\t') {
+                    if (!lexical_unit.isEmpty()) {
+                        TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                        lexical_unit = "";
+                    }
+                      index++;
+                      continue;
+                  }
+                
+                  // STRING START
+                  if (tc == '"' && !scanning_string) {
+                      scanning_string = true;
+                      scanning_string_line = count_lines;
+                      
+                      if (!lexical_unit.isEmpty()) {
+                        TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                        lexical_unit = "";
+                      }
+
+                      lexical_unit += tc;
+                      index++;
+                      continue;
+                  }
+
+                    // STRING CONTENT
+                    if (scanning_string) {
+                        lexical_unit += tc;
+
+                        if (tc == '"') {
+                            scanning_string = false;
+                            TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                            lexical_unit = "";
+                        }
                     
-                    if (input.charAt(index) == '"') {
-                        scanning_string = false;
-                        lexical_unit = lexical_unit + input.charAt(index);
-                        TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
-                        lexical_unit = "";
                         index++;
-                        break;
+                        continue;
+                    }
+
+                        // SEPARATOR
+                        if (terme_separator(tc)) {
+                            if (!lexical_unit.isEmpty()) {
+                                TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                                lexical_unit = "";
+                            }
+                            TOKENS.add(new String[]{Character.toString(tc), "SEPARATOR"});
+                            index++;
+                            continue;
+                        }
+
+                        // OPERATOR
+                        if (terme_operator(tc)) {
+                            if (!lexical_unit.isEmpty()) {
+                                TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                                lexical_unit = "";
+                            }
+                            TOKENS.add(new String[]{Character.toString(tc), "OPERATOR"});
+                            index++;
+                            continue;
+                        }
+                    
+                        // DEFAULT: part of an identifier/keyword/number
+                        lexical_unit += tc;
+                        if (index < input.length()) {
+                        index++;    
+                        }
                         
-                    }
-                }
-
-                if(input.charAt(index) != ' ') {
-
-                     while (terme_separator(input.charAt(index)) || input.charAt(index) == ' ') {
-                            if (input.charAt(index)==' ') {
-                                index++;
-                                continue;
-                            }
-                         TOKENS.add(new String[] {Character.toString(input.charAt(index)),"SEPARATOR"});
-                         index++;
-
-                         if (lexical_unit.length()>0) {
-                            TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
-                            lexical_unit = "";
-                         }
-                        }
-                     while (terme_operator(input.charAt(index)) || input.charAt(index) == ' ') {
-                            if (input.charAt(index)==' ') {
-                                index++;
-                                continue;
-                            }
-
-                         TOKENS.add(new String[] {Character.toString(input.charAt(index)),"OPERATOR"});
-                         index++;
-                         
-                         if (lexical_unit.length()>0) {
-                            TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
-                            lexical_unit = "";
-                         }
-                        }
-
-                          if (input.charAt(index)=='"' && !scanning_string) {
-                            scanning_string = true;
-                            scanning_string_line = count_lines;
-                            
-                            if (lexical_unit.length() > 0) {
-                            TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
-                            lexical_unit = "";        
-                            }
-                        }
-
-                        lexical_unit = lexical_unit + input.charAt(index);
-                    }
-                    else
-                    {if (lexical_unit.length() > 0) {// to avoid empty strings as tokens
-                        TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
-                        lexical_unit = "";
-                    }}
-                    index++;
                 }
 
             }

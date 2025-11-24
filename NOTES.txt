@@ -5,13 +5,6 @@ Lexical Analyzer:
     -> puting error method calls in the right places.
     -> 
 
-3- Add other constant indicator methods
- 
-4- TEST THE ANALYZER !!!
-
-5- Optimize the code 
-    -> One indicator method different matrixes
-
 6- Add lines and colonnes trackers    
 
 Error handler :
