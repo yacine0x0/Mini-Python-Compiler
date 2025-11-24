@@ -12,6 +12,8 @@ Lexical Analyzer:
 5- Optimize the code 
     -> One indicator method different matrixes
 
+6- Add lines and colonnes trackers    
+
 Error handler :
 
 1- Define the output to show as a String 

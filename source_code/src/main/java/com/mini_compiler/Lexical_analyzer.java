@@ -22,7 +22,7 @@ public class Lexical_analyzer {
     private static final String[] SPECIAL_KEYWORD = { "Yacine", "Madani" };
     private static final String[] LOGICAL_OPERATORS = {"and","or","not"};
 
-    private static List<String[]> TOKENS = new ArrayList<>(); //list to store tokens
+    public static List<String[]> TOKENS = new ArrayList<>(); //list to store tokens
 
     private static final int LEXICAL_ERROR = 2;
 
@@ -182,7 +182,7 @@ public class Lexical_analyzer {
     }
 
     public static String Tokenizer(String lexical_unit) {
-        if (lexical_unit != " ") {
+        if (lexical_unit != "" && lexical_unit != " ") {
             
         
         for (String keyword : KEYWORDS) {
@@ -194,13 +194,22 @@ public class Lexical_analyzer {
             if (lexical_unit == special) {
                 return "SPECIAL_KEYWORD";
             }
-        } for (String logical : LOGICAL_OPERATORS) {
+        } 
+        for (String logical : LOGICAL_OPERATORS) {
             if (lexical_unit == logical) {
                 return "LOGICAL_OPERATOR";
             }
         }
 
-
+        if (lexical_unit == "False") {
+            return "False";
+        }
+        if (lexical_unit == "True") {
+            return "True";
+        }
+        if (lexical_unit == "None") {
+            return "None";
+        }
         if (unitIsIdentifer(lexical_unit)) {
             return "IDENTIFIER";
         }
@@ -329,6 +338,10 @@ public class Lexical_analyzer {
         String lexical_unit = "";
         String input = "";
         int index = 0;
+        boolean scanning_string = false; // to let strings data types have all entered characters including spaces
+
+        int scanning_string_line = 0;
+        int count_lines = 0;
 
         //setting up file path
         String jarDir = new File(
@@ -344,27 +357,68 @@ public class Lexical_analyzer {
             while (scan.hasNextLine()) { //extracting line by line from code.py
                 input = scan.nextLine() + " ^"; //the character ^ means the end of a line
                 index = 0;
+                count_lines++;
+                
 
-                while (input.charAt(index) != '^' && input.charAt(index) != '#') {
-                //# is for the beginning of a comment so we ignore the whole line
-                    if(input.charAt(index) != ' ') {
+                while (input != " ^" && input.charAt(index) != '^' && input.charAt(index) != '#') {
 
-                     while (terme_separator(input.charAt(index))) {
+                if (scanning_string && (scanning_string_line != count_lines)) {
+                    //error to call here: unclosed string
+                }    
+
+                if (scanning_string && input.charAt(index)!='^') {
+                    lexical_unit = lexical_unit + input.charAt(index);
+                    index++;
+                    
+                    if (input.charAt(index) == '"') {
+                        scanning_string = false;
+                        lexical_unit = lexical_unit + input.charAt(index);
+                        TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
+                        lexical_unit = "";
+                        index++;
+                        break;
+                        
+                    }
+                }
+
+                if(input.charAt(index) != ' ') {
+
+                     while (terme_separator(input.charAt(index)) || input.charAt(index) == ' ') {
                             if (input.charAt(index)==' ') {
                                 index++;
                                 continue;
                             }
-                         TOKENS.add(new String[] {Character.toString(index),"SEPARATOR"});
+                         TOKENS.add(new String[] {Character.toString(input.charAt(index)),"SEPARATOR"});
                          index++;
+
+                         if (lexical_unit.length()>0) {
+                            TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
+                            lexical_unit = "";
+                         }
                         }
-                     while (terme_operator(input.charAt(index))) {
+                     while (terme_operator(input.charAt(index)) || input.charAt(index) == ' ') {
                             if (input.charAt(index)==' ') {
                                 index++;
                                 continue;
                             }
 
-                         TOKENS.add(new String[] {Character.toString(index),"OPERATOR"});
+                         TOKENS.add(new String[] {Character.toString(input.charAt(index)),"OPERATOR"});
                          index++;
+                         
+                         if (lexical_unit.length()>0) {
+                            TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
+                            lexical_unit = "";
+                         }
+                        }
+
+                          if (input.charAt(index)=='"' && !scanning_string) {
+                            scanning_string = true;
+                            scanning_string_line = count_lines;
+                            
+                            if (lexical_unit.length() > 0) {
+                            TOKENS.add(new String[] {lexical_unit,Tokenizer(lexical_unit)});
+                            lexical_unit = "";        
+                            }
                         }
 
                         lexical_unit = lexical_unit + input.charAt(index);
