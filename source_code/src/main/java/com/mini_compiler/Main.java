@@ -4,6 +4,12 @@ import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
+/**
+ * @author Yacine Madani
+ * @version 1.0
+ * @since November 2025
+ */
+
 public class Main {
 
 

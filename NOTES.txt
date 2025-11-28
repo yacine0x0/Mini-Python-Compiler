@@ -1,4 +1,9 @@
+README FILE: !!! EDIT IT LATER !!!
+
 Lexical Analyzer:
+
+- Add string comparaison function instead of .equals
+- Handle operators ++ -- and others
 
 2- Define and handle Error Types
     -> final integers for each type of Error

@@ -13,11 +13,11 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
+
 public class Lexical_analyzer {
 
     private static final String[] KEYWORDS = { "if", "else", "switch", "while", "do", "class", "import", "break",
-            "contine", "def", "return", "for", "finally", "elif", "from", "try", "as", "except", "raise", "int",
-            "float", "complex", "str", "bool" };
+            "contine", "def", "return", "for", "finally", "elif", "from", "try", "as", "except", "raise"};
 
     private static final String[] SPECIAL_KEYWORD = { "Yacine", "Madani" };
     private static final String[] LOGICAL_OPERATORS = {"and","or","not"};
@@ -308,7 +308,7 @@ public class Lexical_analyzer {
                 count_lines++;
                 
 
-                while (input != " ^" && input.charAt(index) != '^' && input.charAt(index) != '#') {
+                while (!input.equals(" ^") && input.charAt(index) != '^' && input.charAt(index) != '#') {
 
                 if (scanning_string && (scanning_string_line != count_lines)) {
                     //error to call here: unclosed string
