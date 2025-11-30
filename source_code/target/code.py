@@ -1,9 +1,10 @@
+@import
 Yacine Madani
-x = 15;      
+x=15;      
 
 
 
-chaine_de_charactere = "yacinemadani2005@gmail.com"
+chaine_de_charactere = "yacin+emadani2005@gmail.com"
 
 while(True)
 
