@@ -133,32 +133,61 @@ public class Lexical_analyzer {
         }
     }
 
+    //testing if two strings are identical
+    private static boolean ifEquals(String str1, String str2){
+        int indexStr1 = 0;
+        int indexStr2 = 0;
+        if (str1.length()!=str2.length()) {
+            return false;
+        }
+        do {
+            if (str1.charAt(indexStr1) != str2.charAt(indexStr2)) {
+                return false;
+            }
+            indexStr1++;
+            indexStr2++;
+        } while (indexStr1<str1.length() && indexStr2<str2.length());
+        return true;
+    }
+
+    //testing if string is empty
+    private static boolean ifEmpty (String lexical_unit){
+        lexical_unit = lexical_unit + "#";
+        if (lexical_unit == null || ifEquals(lexical_unit,"#")) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+
     public static String Tokenizer(String lexical_unit) {
-        if (!lexical_unit.isEmpty() && !lexical_unit.equals(" ")) {
+        if (!ifEmpty(lexical_unit) && !ifEquals(lexical_unit," ")) {
             
         
         for (String keyword : KEYWORDS) {
-            if (lexical_unit.equals(keyword)) {
+            if (ifEquals(lexical_unit,keyword)) {
                 return "KEYWORD";
             }
         }
         for (String special : SPECIAL_KEYWORD) {
-            if (lexical_unit.equals(special)) {
+            if (ifEquals(lexical_unit,special)) {
                 return "SPECIAL_KEYWORD";
             }
         } 
         for (String logical : LOGICAL_OPERATORS) {
-            if (lexical_unit.equals(logical)) {
+            if (ifEquals(lexical_unit,logical)) {
                 return "LOGICAL_OPERATOR";
                 
             }
         }
 
 
-        if (lexical_unit.equals("False") || lexical_unit.equals("True")) {
+        if (ifEquals(lexical_unit,"False") || ifEquals(lexical_unit,"True")) {
             return "BOOLEAN";
         }
-        if (lexical_unit.equals("None")) {
+        if (ifEquals(lexical_unit,"None")) {
             return "None";
         }
         if (unitIsIdentifer(lexical_unit)) {
@@ -285,6 +314,7 @@ public class Lexical_analyzer {
     public static void Analyzer() throws FileNotFoundException, URISyntaxException {
         String lexical_unit = "";
         String input = "";
+        char tc = ' ';
         int index = 0;
         boolean scanning_string = false; // to let strings data types have all entered characters including spaces
 
@@ -308,16 +338,16 @@ public class Lexical_analyzer {
                 count_lines++;
                 
 
-                while (!input.equals(" ^") && input.charAt(index) != '^' && input.charAt(index) != '#') {
+                while (!ifEquals(input," ^") && input.charAt(index) != '^' && input.charAt(index) != '#') {
 
                 if (scanning_string && (scanning_string_line != count_lines)) {
                     //error to call here: unclosed string
                 }    
-                char tc = input.charAt(index);
+                 tc = input.charAt(index);
 
                               // Skip spaces
                   if (tc == ' ' || tc == '\t') {
-                    if (!lexical_unit.isEmpty()) {
+                    if (!ifEmpty(lexical_unit)) {
                         TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                         lexical_unit = "";
                     }
@@ -330,7 +360,7 @@ public class Lexical_analyzer {
                       scanning_string = true;
                       scanning_string_line = count_lines;
                       
-                      if (!lexical_unit.isEmpty()) {
+                      if (!ifEmpty(lexical_unit)) {
                         TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                         lexical_unit = "";
                       }
@@ -356,7 +386,7 @@ public class Lexical_analyzer {
 
                         // SEPARATOR
                         if (terme_separator(tc)) {
-                            if (!lexical_unit.isEmpty()) {
+                            if (!ifEmpty(lexical_unit)) {
                                 TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                                 lexical_unit = "";
                             }
@@ -367,7 +397,7 @@ public class Lexical_analyzer {
 
                         // OPERATOR
                         if (terme_operator(tc)) {
-                            if (!lexical_unit.isEmpty()) {
+                            if (!ifEmpty(lexical_unit)) {
                                 TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                                 lexical_unit = "";
                             }
