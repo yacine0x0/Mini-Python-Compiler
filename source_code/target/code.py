@@ -1,13 +1,6 @@
-@import
-Yacine Madani
-x=15;      
+x= 5
+7eze = 1
 
-
-
-chaine_de_charactere = "yacin+emadani2005@gmail.com"
-
-while(True)
-
-
-
-print(chaine_de_charactere)
+while(xand 2):
+x= x+1
+print("is either 100 or less than 50")

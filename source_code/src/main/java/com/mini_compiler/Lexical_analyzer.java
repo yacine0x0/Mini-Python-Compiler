@@ -24,8 +24,12 @@ public class Lexical_analyzer {
 
     public static List<String[]> TOKENS = new ArrayList<>(); //list to store tokens
 
-    private static final int LEXICAL_ERROR = 2;
+    private static final int FILE_NOT_FOUND_ERROR = 0;
+    private static final int TOKEN_ERROR = 1;
+    private static final int UNCLOSED_STRING_ERROR = 2;
 
+    private static int line_number = 0;
+    private static int column_number = 0;
     // current character checker for float indicator only
     private static int terme_float(char tc) {
         if (tc >= '0' && tc <= '9') {
@@ -112,14 +116,13 @@ public class Lexical_analyzer {
     // Identifier indicator using the matrix way
     private static boolean unitIsIdentifer(String lexical_unit) {
         int[][] matrice = {
-                { 1, 2, -1, -1 },
-                { 2, 2, 1, -1 },
-                { 2, 2, 1, -1 } };
+                { 1, 1, -1, -1 },
+                { 1, 1, 1, -1 }};
 
         lexical_unit = lexical_unit + "#";
         int i = 0;
         int etat_courant = 0;
-        int vf = 2;
+        int vf = 1;
         while (lexical_unit.charAt(i) != '#' && matrice[etat_courant][terme(lexical_unit.charAt(i))] != -1) {
 
             etat_courant = matrice[etat_courant][terme(lexical_unit.charAt(i))];
@@ -244,7 +247,7 @@ public class Lexical_analyzer {
         }
         // CALL ERROR FUNCTION HERE !!!!
 
-        return "error";
+        Error_handler.setLexicalErrorMessage(TOKEN_ERROR, lexical_unit, line_number, column_number);
     }
     return "error";
     }
@@ -282,13 +285,19 @@ public class Lexical_analyzer {
                 while (!ifEquals(input," ^") && input.charAt(index) != '^' && input.charAt(index) != '#') {
 
                 if (scanning_string && (scanning_string_line != count_lines)) {
-                    //error to call here: unclosed string
+                    Error_handler.setLexicalErrorMessage(UNCLOSED_STRING_ERROR, lexical_unit, scanning_string_line, column_number);
+                    //  scanning_string = false;
                 }    
                  tc = input.charAt(index);
 
-                              // Skip spaces
-                  if (tc == ' ' || tc == '\t') {
+                // Skip spaces
+                  if ((tc == ' ' || tc == '\t') && !scanning_string) {
+
                     if (!ifEmpty(lexical_unit)) {
+
+                        line_number = count_lines;
+                        column_number = index + 1 - (lexical_unit.length());
+
                         TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                         lexical_unit = "";
                     }
@@ -302,6 +311,10 @@ public class Lexical_analyzer {
                       scanning_string_line = count_lines;
                       
                       if (!ifEmpty(lexical_unit)) {
+
+                        line_number = count_lines;
+                        column_number = index + 1 - (lexical_unit.length());
+
                         TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                         lexical_unit = "";
                       }
@@ -317,6 +330,10 @@ public class Lexical_analyzer {
 
                         if (tc == '"') {
                             scanning_string = false;
+
+                            line_number = count_lines;
+                            column_number = index + 1 - (lexical_unit.length());
+
                             TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                             lexical_unit = "";
                         }
@@ -328,6 +345,10 @@ public class Lexical_analyzer {
                         // SEPARATOR
                         if (Tokenizer(Character.toString(tc))=="SEPARATOR") {
                             if (!ifEmpty(lexical_unit)) {
+
+                            line_number = count_lines;
+                            column_number = index + 1 - (lexical_unit.length());
+
                                 TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                                 lexical_unit = "";
                             }
@@ -337,6 +358,9 @@ public class Lexical_analyzer {
                                 tc = input.charAt(index);
                             }while (tc == '.');
 
+                                line_number = count_lines;
+                                column_number = index + 1 - (lexical_unit.length());
+
                             TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                             lexical_unit = "";
                             continue;
@@ -345,6 +369,10 @@ public class Lexical_analyzer {
                         // OPERATOR
                         if (Tokenizer(Character.toString(tc))=="OPERATOR") {
                             if (!ifEmpty(lexical_unit)) {
+
+                                line_number = count_lines;
+                                column_number = index + 1 - (lexical_unit.length());
+
                                 TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                                 lexical_unit = "";
                             }
@@ -353,6 +381,10 @@ public class Lexical_analyzer {
                             index++;
                             tc = input.charAt(index);
                             }
+
+                            line_number = count_lines;
+                            column_number = index + 1 - (lexical_unit.length());
+
                             TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
                             lexical_unit = "";
                             continue;    
@@ -369,7 +401,7 @@ public class Lexical_analyzer {
             }
             scan.close();
         } catch (FileNotFoundException e) {
-            System.out.println("File not found!");
+          Error_handler.setLexicalErrorMessage(FILE_NOT_FOUND_ERROR, "", 0, 0);
         }
 
     }
