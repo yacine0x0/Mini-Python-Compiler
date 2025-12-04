@@ -1,14 +1,13 @@
-README FILE: !!! EDIT IT LATER !!!
 
 Lexical Analyzer:
-
-- Add string comparaison function instead of .equals
-- Handle operators ++ -- and others
 
 2- Define and handle Error Types
     -> final integers for each type of Error
     -> puting error method calls in the right places.
-    -> 
+   
+    -> Pass the lexical unit as an argument to the error function
+        in order to verify the form of the error and suggest correction  
+        
 
 6- Add lines and colonnes trackers    
 
