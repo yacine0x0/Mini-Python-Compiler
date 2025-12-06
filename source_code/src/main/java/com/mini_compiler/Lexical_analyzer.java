@@ -30,6 +30,12 @@ public class Lexical_analyzer {
 
     private static int line_number = 0;
     private static int column_number = 0;
+
+    //file path extractor 
+    public static File getFilePath(File file){
+        return file;
+    }
+
     // current character checker for float indicator only
     private static int terme_float(char tc) {
         if (tc >= '0' && tc <= '9') {
@@ -257,7 +263,6 @@ public class Lexical_analyzer {
 
     public static void Analyzer() throws FileNotFoundException, URISyntaxException {
         String lexical_unit = "";
-        String unit_operator = "";
         String input = "";
         char tc = ' ';
         int index = 0;
@@ -265,15 +270,14 @@ public class Lexical_analyzer {
 
         int scanning_string_line = 0;
         int count_lines = 0;
-        //setting up file path
-        String jarDir = new File(
-        Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
 
-        File file = new File(jarDir, "code.py");
+        //file path for code.py
+        File file = new File("executable/code.py");
 
-       
+            
 
         // Scanning input from a file "code.py" located in "executable" folder
+
         try {
             Scanner scan = new Scanner(file);
             while (scan.hasNextLine()) { //extracting line by line from code.py

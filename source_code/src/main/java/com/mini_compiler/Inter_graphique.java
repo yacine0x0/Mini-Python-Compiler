@@ -1,13 +1,63 @@
 package com.mini_compiler;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
 public class Inter_graphique extends JFrame {
-    JTextArea codeArea;
-    JButton compileButton,effacerButton;
-    JTextArea outputArea;
-    JPanel codePanel,logsPanel,buttonsPanel;
+   private JTextArea codeArea;
+   private JButton saveButton,compileButton,eraseButton;
+   private JTextArea outputArea;
+   private JPanel codePanel,logsPanel,buttonsPanel;
+
+    private static ArrayList<String>  ALL_ERRORS = new ArrayList<>();
+    private static int count_error = 0;
+
+     
+    private static void savingInFile(JTextArea codeArea, JTextArea outputArea){
+            String input = codeArea.getText();  // Get text from JTextArea
+                Path filePath = Paths.get("executable/code.py");
+
+                try {
+                        Files.write(filePath, input.getBytes());   // Write text into file
+                        outputArea.setText("SAVED SUCCESSFULLY");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        outputArea.setText("ERROR WHILE SAVING *-* \n");
+                    }
+    }
+ 
+    private static void emptyFile(JTextArea codeArea, JTextArea outputArea){
+             Path filePath = Paths.get("executable/code.py");
+        try {
+                        Files.write(filePath, new byte[0]); // write nothing into file
+                        codeArea.setText("");
+                        outputArea.setText("ERASED SUCCESSFULLY");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        outputArea.setText("ERROR WHILE ERASING FILE CONTENT *-* \n");
+                    }
+    } 
+
+    private static void updateLogs(JTextArea outputArea){
+        String input = outputArea.getText();
+
+        for (String error : ALL_ERRORS) {
+            input = input + error;
+        }
+
+        outputArea.setText(input);
+    }
 
     public Inter_graphique() {
         setTitle("Mini-Py-Compiler");
@@ -15,17 +65,21 @@ public class Inter_graphique extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        codeArea = new JTextArea();
+        
+        
+        saveButton = new JButton("Save");
         compileButton = new JButton("Compile");
-        effacerButton = new JButton("Erase all");
-        outputArea = new JTextArea();
+        eraseButton = new JButton("Erase All");
+        codeArea = new JTextArea();
+        outputArea = new JTextArea(10,100);
         outputArea.setEditable(false);
 
         //Buttons postion at NORTH
         buttonsPanel = new JPanel();
         buttonsPanel.setBorder(BorderFactory.createTitledBorder("Actions"));
+        buttonsPanel.add(saveButton);
         buttonsPanel.add(compileButton);
-        buttonsPanel.add(effacerButton);
+        buttonsPanel.add(eraseButton);
         add(buttonsPanel, BorderLayout.NORTH);
         
         //code area at CENTER 
@@ -44,12 +98,62 @@ public class Inter_graphique extends JFrame {
         logsPanel.add(logsScrollPane, BorderLayout.CENTER);
         add(logsPanel, BorderLayout.SOUTH);
 
-        // Button action
-        compileButton.addActionListener(e -> {
-            String code = codeArea.getText();
-            // Here you would call your compiler logic
-            outputArea.setText("Compilation output will be shown here.");
+        
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0){
+                savingInFile(codeArea, outputArea);
+                JOptionPane.showMessageDialog(null, "SAVED SUCCESSFULLY");
+            }
         });
+        
+        //Compile Button action
+        compileButton.addActionListener(e -> {
+           savingInFile(codeArea, outputArea);
+           ALL_ERRORS.clear();
+           count_error = 0;
+           Error_handler.ResetALLERRORS();
+           Error_handler.ResetCountError();
+           
+           try {
+            Lexical_analyzer.Analyzer();
+        } catch (FileNotFoundException e1) {
+            outputArea.setText("FILE NOT FOUND\n");
+            e1.printStackTrace();
+        } catch (URISyntaxException e1) {
+            outputArea.setText("PROBLEM WHILE READING FILE\n");
+            e1.printStackTrace();
+        }
+           count_error = Error_handler.getErrorCount();
+            
+           if (count_error > 0) {
+            ALL_ERRORS = Error_handler.getErrors();
+            outputArea.setText("");
+            updateLogs(outputArea);
+           }
+           else{
+            outputArea.setText("COMPILED SUCCESSFULLY\n--- NO ERRORS FOUND ---\n");
+           }
+        });
+
+
+        //Erase All Button action
+        eraseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int message  = JOptionPane.showConfirmDialog(null, "Are you sure ?");
+
+                if (message == JOptionPane.YES_OPTION) {
+                    emptyFile(codeArea, outputArea);
+                    ALL_ERRORS.clear();
+                    count_error = 0;
+                    Error_handler.ResetALLERRORS();
+                    Error_handler.ResetCountError();
+                    JOptionPane.showMessageDialog(null, "ERASED SUCCESSFULLY");
+                }
+                
+            }
+        });
+
     }
 
     public static void main(String[] args) {
