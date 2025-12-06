@@ -15,7 +15,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-     /*   try {
+       try {
             Lexical_analyzer.Analyzer();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
@@ -29,6 +29,6 @@ public class Main {
         System.out.println(Arrays.toString(token));    
         }
         
- */
+ 
     }
 }

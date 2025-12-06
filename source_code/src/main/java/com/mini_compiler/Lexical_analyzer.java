@@ -16,8 +16,7 @@ import java.net.URISyntaxException;
 
 public class Lexical_analyzer {
 
-    private static final String[] KEYWORDS = { "if", "else", "switch", "while", "do", "class", "import", "break",
-            "contine", "def", "return", "for", "finally", "elif", "from", "try", "as", "except", "raise"};
+    private static final String[] KEYWORDS = { "if", "else", "switch", "while", "do", "class","import", "break","self","contine", "def", "return", "for", "finally", "elif", "from", "try", "as", "except", "raise","int","str","float","boolean","pass"};
     private static final String[] SPECIAL_KEYWORD = { "Yacine", "Madani" };
     private static final String[] OPERATORS = {"and","not","<<=", ">>=", "**=","//=", "or","==", "!=", ">=", "<=","//","**","<<", ">>","+=","%=", "-=","*=", "/=","=","+", "-", "*", "/", "%", ">", "<","!"};
     private static final String[] SEPARATORS = { ".",";", ",", ":", "(", ")", "{", "}", "[", "]", "@" };
@@ -400,6 +399,10 @@ public class Lexical_analyzer {
                         index++;    
                         }
                         
+                }
+
+                if (ifEquals(input, " ^")) {
+                    TOKENS.add(new String[]{"JUMP", "LINE_JUMP"});
                 }
 
             }

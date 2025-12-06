@@ -29,3 +29,14 @@ Error handler :
 Syntax Analyzer:
 
 1- Prepare Grammar
+
+
+
+Interface
+
+1-Buttons:
+
+-> Add when a file is empty condition
+-> handle some other exceptions if there's
+
+2- add the syntax analyzer method to work
