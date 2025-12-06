@@ -32,7 +32,7 @@ public static void setLexicalErrorMessage(int ERROR_CODE, String token, int line
     }
 }
 
-private static void setSyntaxErrorMessage(int ERROR_CODE, String token, int line_number, int column_number) {
+public static void setSyntaxErrorMessage(int ERROR_CODE, String token, int line_number, int column_number) {
     syntax_error_message = "Syntax Error: ";
     count_error++;
     switch (ERROR_CODE) {
