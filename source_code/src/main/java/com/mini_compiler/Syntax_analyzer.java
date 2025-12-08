@@ -25,6 +25,8 @@ public class Syntax_analyzer {
     private static final int EXPECTED_DEDENT = 7;
     private static final int EXPECTED_CONDITION = 8;
     private static final int EXPECTED_ATLEAST_ONE_INSTRUCTION = 9;
+    private static final int ERROR_AT_FACTOR = 10;
+    private static final int EXPECTED_PARANTHESE_OPENING = 11;
     private static final int UNKNOWN_ERROR = -1;
 
     /**
@@ -135,8 +137,7 @@ public class Syntax_analyzer {
             Emptyline();
             return;
         } else if (ifEquals(currentToken[0], "def") || ifEquals(currentToken[0], "class")) {
-            // Declaration();
-            nextToken();
+           Declaration();
             return;
         } else {
             Error_handler.setSyntaxErrorMessage(UNKNOWN_ERROR,
@@ -145,6 +146,123 @@ public class Syntax_analyzer {
             nextToken();
             return;
         }
+    }
+
+    private static void Declaration(){
+        if (ifEquals(currentToken[0], "class")) {
+            nextToken();
+            if (ifEquals(currentToken[1], "IDENTIFIER")) {
+                nextToken();
+                if (ifEquals(currentToken[0], ":")) {
+                    nextToken();
+                         if (ifEquals(currentToken[0], "NEWLINE")) {
+                            nextToken();
+                            Block();
+                            return;
+                        }
+                        else{  Error_handler.setSyntaxErrorMessage(EXPECTED_NEWLINE,
+                                currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                                currentPosition != null ? currentPosition[1] : "-1");
+                                nextToken();
+                             return;}
+                }
+                else{Error_handler.setSyntaxErrorMessage(EXPECTED_COLON,
+                            currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                            currentPosition != null ? currentPosition[1] : "-1");
+                            nextToken();}
+            }
+            else{Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
+                            currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                            currentPosition != null ? currentPosition[1] : "-1");
+                            nextToken();}
+        }
+        else if (ifEquals(currentToken[0], "def")) {
+                    if (ifEquals(currentToken[1], "IDENTIFIER")) {
+                        nextToken();
+                        if (ifEquals(currentToken[0], "(")) {
+                            nextToken();
+                            PARAMETERS();
+                            if (ifEquals(currentToken[0], ")")) {
+                                nextToken();
+                                    if (ifEquals(currentToken[0], ":")) {
+                                        nextToken();
+                                            if (ifEquals(currentToken[0], "NEWLINE")) {
+                                                nextToken();
+                                                Block();
+                                                return;
+                                            }
+                                                else{Error_handler.setSyntaxErrorMessage(EXPECTED_NEWLINE,
+                                                       currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                                                        currentPosition != null ? currentPosition[1] : "-1");
+                                                        nextToken(); return;}
+                                    }
+                                    else{Error_handler.setSyntaxErrorMessage(EXPECTED_COLON,
+                                     currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                                      currentPosition != null ? currentPosition[1] : "-1");
+                                      nextToken();}
+                            }
+                            else{Error_handler.setSyntaxErrorMessage(EXPECTED_PARANTHESE_CLOSING,
+                            currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                            currentPosition != null ? currentPosition[1] : "-1");
+                            nextToken();}
+                        }
+                        else{Error_handler.setSyntaxErrorMessage(EXPECTED_PARANTHESE_OPENING,
+                            currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                            currentPosition != null ? currentPosition[1] : "-1");
+                            nextToken();}
+                    }
+                        else{Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
+                                   currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                                    currentPosition != null ? currentPosition[1] : "-1");
+                                      nextToken();}
+        }
+    }
+
+    private static void PARAMETERS(){
+        if (ifEquals(currentToken[1], "IDENTIFIER") ||
+                            ifEquals(currentToken[1], "INTEGER") ||
+                            ifEquals(currentToken[1], "FLOAT") ||
+                            ifEquals(currentToken[1], "BOOLEAN") ||
+                            ifEquals(currentToken[0], "None") ||
+                            ifEquals(currentToken[1], "STRING")) {
+            nextToken();
+            PARAMETERSPRIME();
+            return;
+        }
+        else{Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
+                            currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                            currentPosition != null ? currentPosition[1] : "-1");
+                            nextToken(); return;}
+    }
+
+    private static void PARAMETERSPRIME(){
+        if (ifEquals(currentToken[0], ")")) {
+            return;
+        }
+        else if (ifEquals(currentToken[0], ",")) {
+            nextToken();
+              if (ifEquals(currentToken[1], "IDENTIFIER") ||
+                            ifEquals(currentToken[1], "INTEGER") ||
+                            ifEquals(currentToken[1], "FLOAT") ||
+                            ifEquals(currentToken[1], "BOOLEAN") ||
+                            ifEquals(currentToken[0], "None") ||
+                            ifEquals(currentToken[1], "STRING")){
+                                nextToken();
+                                if (ifEquals(currentToken[0], ",")) {
+                                PARAMETERSPRIME();    
+                                }
+                                
+                                return;
+                            }
+                            else{Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
+                            currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                            currentPosition != null ? currentPosition[1] : "-1");
+                            nextToken();}
+        }
+        else{Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
+                            currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                            currentPosition != null ? currentPosition[1] : "-1");
+                            nextToken();}
     }
 
     private static void Emptyline() {
@@ -196,6 +314,7 @@ public class Syntax_analyzer {
      * This is iterative and handles a chain of binary ops.
      */
     private static void Expression() {
+        
         Term();
 
         // loop while current token is a binary arithmetic operator
@@ -221,14 +340,28 @@ public class Syntax_analyzer {
                         currentPosition != null ? currentPosition[1] : "-1");
                 // try to continue
             } else {
+                
                 Term();
             }
         }
     }
 
-    private static void ExpressionPrime() {
-        // no longer used (kept for compatibility). Expression() handles repetition
-        // iteratively.
+    private static void Factor() {
+        if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "STRING") || ifEquals(currentToken[1], "INTEGER") || ifEquals(currentToken[1], "FLOAT") || ifEquals(currentToken[1], "BOOLEAN") || ifEquals(currentToken[0], "None") ) {
+            nextToken();
+            return;
+        }
+        else if (ifEquals(currentToken[0], "(")) {
+            nextToken();
+            Expression();
+            if (ifEquals(currentToken[0], ")")) {
+                nextToken();
+                return;
+            }
+        }
+        else{ Error_handler.setSyntaxErrorMessage(ERROR_AT_FACTOR, currentToken[0], currentPosition[0], currentPosition[1]);
+            nextToken(); return;}
+
     }
 
     private static void Term() {
@@ -302,7 +435,12 @@ public class Syntax_analyzer {
     }
 
     private static void Condition() {
-       if (ifEquals(currentToken[0], ":")) {
+        if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "STRING") || ifEquals(currentToken[1], "INTEGER") || ifEquals(currentToken[1], "FLOAT") || ifEquals(currentToken[1], "BOOLEAN") || ifEquals(currentToken[0], "None") ) {
+            nextToken();
+            return;
+        }
+
+        if (ifEquals(currentToken[0], ":")) {
          Error_handler.setSyntaxErrorMessage(EXPECTED_CONDITION,
                         currentToken != null ? currentToken[0] : "null",
                         currentPosition != null ? currentPosition[0] : "-1",

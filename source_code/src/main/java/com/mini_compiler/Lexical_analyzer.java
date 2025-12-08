@@ -290,7 +290,7 @@ public class Lexical_analyzer {
         char tc = ' ';
         int index = 0;
         boolean scanning_string = false; // to let strings data types have all entered characters including spaces
-
+        boolean skippoint = false;
         int scanning_string_line = 0;
         int count_lines = 0;
 
@@ -334,6 +334,15 @@ public class Lexical_analyzer {
                         // scanning_string = false;
                     }
                     tc = input.charAt(index);
+
+                    if (tc >= '0' || tc <='9') {
+                        skippoint = true;
+                    }
+                    if (skippoint && tc == '.') {
+                        lexical_unit += tc;
+                        index++;
+                        continue;
+                    }
 
                     // Skip spaces
                     if ((tc == ' ' || tc == '\t') && !scanning_string) {

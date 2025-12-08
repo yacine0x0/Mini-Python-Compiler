@@ -37,14 +37,23 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
     count_error++;
     switch (ERROR_CODE) {
         case 0:
+            if (token.equals("NEWLINE")) {
+            syntax_error_message += "Expected something  at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;    
+            }
+            else{
             syntax_error_message += "Unexpected token '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);
-            break;
+            break;}
     
-        case 1 : 
-        syntax_error_message += "Expected new line before '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+        case 1 : if (token.equals("EOF") || token.equals("NEWLINE")) {
+            syntax_error_message = ""; break;
+        } 
+    else{syntax_error_message += "Expected new line before '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);
-            break;
+            break;}
+        
 
         case 2 : 
         syntax_error_message += "Expected ')' around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
@@ -52,9 +61,15 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
             break;    
 
         case 3:
-            syntax_error_message += "Expected ':' around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            if (token.equals("NEWLINE") || token.equals("EOF")) {
+                syntax_error_message += "Expected ':' after def | class or while expression";
             ALL_ERRORS.add(syntax_error_message);
-            break;  
+            break;
+            }
+            else{syntax_error_message += "Expected ':' around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;}
+              
 
         case 4:    
           syntax_error_message += "Expected logical operator around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
@@ -90,6 +105,21 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
             ALL_ERRORS.add(syntax_error_message);
             break;      
             
+        case 10: if (token.equals("EOF")) {
+            syntax_error_message += "Unexpected factor.\n";
+        }
+                syntax_error_message += "Unexpected factor '" + token + "' in expression at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;      
+
+        case 11: if (token.equals("EOF")) {
+            syntax_error_message += "Expected '(' first in declaration.\n";
+        }
+                syntax_error_message += "expected '(' before'" + token + "' in declaration at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;      
+
+
         default:
             syntax_error_message = "Unknown Syntax Error at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);
