@@ -114,8 +114,13 @@ public class Inter_graphique extends JFrame {
            Error_handler.ResetALLERRORS();
            Error_handler.ResetCountError();
            
+            Lexical_analyzer.TOKENS.clear();
+            Lexical_analyzer.POSITION.clear();
+            Syntax_analyzer.reset();
+
            try {
             Lexical_analyzer.Analyzer();
+            Syntax_analyzer.program();
         } catch (FileNotFoundException e1) {
             outputArea.setText("FILE NOT FOUND\n");
             e1.printStackTrace();
@@ -148,6 +153,9 @@ public class Inter_graphique extends JFrame {
                     count_error = 0;
                     Error_handler.ResetALLERRORS();
                     Error_handler.ResetCountError();
+                    Lexical_analyzer.TOKENS.clear();
+                    Lexical_analyzer.POSITION.clear();
+                    Syntax_analyzer.reset();
                     JOptionPane.showMessageDialog(null, "ERASED SUCCESSFULLY");
                 }
                 

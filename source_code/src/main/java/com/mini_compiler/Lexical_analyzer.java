@@ -22,6 +22,7 @@ public class Lexical_analyzer {
     private static final String[] SEPARATORS = { ".",";", ",", ":", "(", ")", "{", "}", "[", "]", "@" };
 
     public static List<String[]> TOKENS = new ArrayList<>(); //list to store tokens
+    public static List<String[]> POSITION = new ArrayList<>(); //list to store tokens
 
     private static final int FILE_NOT_FOUND_ERROR = 0;
     private static final int TOKEN_ERROR = 1;
@@ -245,7 +246,7 @@ public class Lexical_analyzer {
             return "FLOAT";
         }
         if (constantIsInteger(lexical_unit)) {
-            return "INETEGER";
+            return "INTEGER";
         }
         if (constantIsString(lexical_unit)) {
             return "STRING";
@@ -302,6 +303,7 @@ public class Lexical_analyzer {
                         column_number = index + 1 - (lexical_unit.length());
 
                         TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                        POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
                         lexical_unit = "";
                     }
                       index++;
@@ -319,6 +321,7 @@ public class Lexical_analyzer {
                         column_number = index + 1 - (lexical_unit.length());
 
                         TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                        POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
                         lexical_unit = "";
                       }
 
@@ -338,6 +341,7 @@ public class Lexical_analyzer {
                             column_number = index + 1 - (lexical_unit.length());
 
                             TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                            POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
                             lexical_unit = "";
                         }
                     
@@ -353,6 +357,7 @@ public class Lexical_analyzer {
                             column_number = index + 1 - (lexical_unit.length());
 
                                 TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                                POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
                                 lexical_unit = "";
                             }
                              do {
@@ -365,6 +370,7 @@ public class Lexical_analyzer {
                                 column_number = index + 1 - (lexical_unit.length());
 
                             TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                            POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
                             lexical_unit = "";
                             continue;
                         }
@@ -377,6 +383,7 @@ public class Lexical_analyzer {
                                 column_number = index + 1 - (lexical_unit.length());
 
                                 TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                                POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
                                 lexical_unit = "";
                             }
                             while (Tokenizer(Character.toString(tc))=="OPERATOR") {
@@ -389,6 +396,7 @@ public class Lexical_analyzer {
                             column_number = index + 1 - (lexical_unit.length());
 
                             TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
+                            POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
                             lexical_unit = "";
                             continue;    
                         }
@@ -400,10 +408,10 @@ public class Lexical_analyzer {
                         }
                         
                 }
-
-                if (ifEquals(input, " ^")) {
-                    TOKENS.add(new String[]{"JUMP", "LINE_JUMP"});
-                }
+                    if(ifEquals(input, " ^") || input.charAt(index)=='^'){
+                        TOKENS.add(new String[]{"NEWLINE","NEWLINE"});
+                    }
+                
 
             }
             scan.close();

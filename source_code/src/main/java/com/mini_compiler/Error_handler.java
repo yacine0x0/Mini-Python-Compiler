@@ -32,7 +32,7 @@ public static void setLexicalErrorMessage(int ERROR_CODE, String token, int line
     }
 }
 
-public static void setSyntaxErrorMessage(int ERROR_CODE, String token, int line_number, int column_number) {
+public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String line_number, String column_number) {
     syntax_error_message = "Syntax Error: ";
     count_error++;
     switch (ERROR_CODE) {
@@ -41,6 +41,26 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, int line_
             ALL_ERRORS.add(syntax_error_message);
             break;
     
+        case 1 : 
+        syntax_error_message += "Expected new line before '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;
+
+        case 2 : 
+        syntax_error_message += "Expected ')' around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;    
+
+        case 3:
+            syntax_error_message += "Expected ':' around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;  
+
+        case 4:    
+          syntax_error_message += "Expected logical operator around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;  
+
         default:
             syntax_error_message = "Unknown Syntax Error at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);

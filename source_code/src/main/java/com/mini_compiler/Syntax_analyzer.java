@@ -1,273 +1,347 @@
 package com.mini_compiler;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Syntax_analyzer {
     private static String[] currentToken;
+    private static String[] currentPosition;
     private static int index = 0;
-    private static List<String[]> TOKENS = Lexical_analyzer.TOKENS;
-    private static boolean success = false;
 
+    // These reference the lists produced by the lexical analyzer.
+    // NOTE: do NOT clear these here in reset() — the caller (GUI) should clear them
+    // when appropriate
+    // before calling Lexical_analyzer.Analyzer().
+    private static List<String[]> TOKENS = Lexical_analyzer.TOKENS;
+    private static List<String[]> POSITION = Lexical_analyzer.POSITION;
+
+    private static final int UNEXPECTED_TOKEN = 0;
+    private static final int EXPECTED_NEWLINE = 1;
+    private static final int EXPECTED_PARANTHESE_CLOSING = 2;
+    private static final int EXPECTED_COLON = 3;
+    private static final int EXPECTED_LOGICAL_OP = 4;
+    private static final int UNKNOWN_ERROR = -1;
+
+    /**
+     * Advance to next token. If we advance past the provided token lists,
+     * populate a synthetic EOF token so parsing loops terminate gracefully.
+     */
     private static void nextToken() {
         index++;
-        if (index < TOKENS.size()) {
+        if (index < TOKENS.size() && index < POSITION.size()) {
             currentToken = TOKENS.get(index);
+            currentPosition = POSITION.get(index);
+        } else {
+            // Create a safe EOF marker if we run out of tokens
+            currentToken = new String[] { "EOF", "EOF" };
+            currentPosition = new String[] { "-1", "-1" };
         }
     }
 
-    private static boolean AR_LO_OPERATOR(String currenttoken) {
-        String[] OPERATORS = { "and", "not", "<<=", ">>=", "**=", "//=", "or", "==", "!=", ">=", "<=", "//", "**", "<<",
-                ">>", "=", "+", "-", "*", "/", "%", ">", "<", "!" };
-
-         for (String OP : OPERATORS) {
-            if (currenttoken == OP) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean COMBINED_OPERATOR(String currenttoken) {
-        String[] LONG_OPERATORS = { "+=", "%=", "-=", "*=", "/=" };
-        for (String combOP : LONG_OPERATORS) {
-            if (currenttoken == combOP) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static void Analyzer() {
-        TOKENS.add(new String[] { "#", "#" });
+    /**
+     * Reset parser internal state (index/currentToken). Do NOT clear
+     * TOKENS/POSITION here
+     * because the lexical analyzer will refill them; clearing them here would lose
+     * tokens.
+     */
+    public static void reset() {
         index = 0;
-        currentToken = TOKENS.get(index);
-
-        Start();
-
-        if (index == TOKENS.size() - 1 && currentToken[0] == "#" && Error_handler.getErrorCount() > 0) {
-            success = true;
-        }
+        currentToken = null;
+        currentPosition = null;
+        TOKENS.clear();
+        POSITION.clear();
     }
 
-    private static void Start() {
+    // Null-safe string equality
+    private static boolean ifEquals(String a, String b) {
+        return a != null && a.equals(b);
+    }
 
-        if (currentToken[0] == "def" || currentToken[0] == "class") {
-            DECLARATION();
-        } else if (currentToken[1] == "IDENTIFIER") {
-            nextToken();
-            if (currentToken[0]=="(") {
-                PARAMETER_FUNC_CALL();    
-            }
-            if (currentToken[0]=="=" || COMBINED_OPERATOR(currentToken[0])) {
-                ASSIGNING();
-            }
-            else{/*ERROR */}
+    // Null-or-empty check
+    private static boolean ifEmpty(String lexical_unit) {
+        return lexical_unit == null || lexical_unit.isEmpty();
+    }
 
-        }else if (currentToken[0]=="while") {
-            MAIN_INSTRUCTION();
-        }
-        else if(currentToken[0] != "#") {
-            Start();
-        }
-        else if (currentToken[0] == "#") {
+    /**
+     * Entry point of syntax analyzer.
+     * It's defensive: if tokens list is empty, it will not throw.
+     */
+    public static void program() {
+        // reset parser state
+        index = 0;
+
+        // Defensive: if no tokens are present, nothing to do.
+        if (TOKENS == null || POSITION == null || TOKENS.isEmpty() || POSITION.isEmpty()) {
+            // Nothing to parse; caller should provide tokens via Lexical_analyzer.
             return;
         }
-        else{/*Error_handler.setSyntaxErrorMessage(index, null, index, index);*/}
 
+        // Add EOF marker only if last token isn't EOF
+        String[] lastTok = TOKENS.get(TOKENS.size() - 1);
+        if (lastTok == null || !ifEquals(lastTok[0], "EOF")) {
+            TOKENS.add(new String[] { "EOF", "EOF" });
+            POSITION.add(new String[] { "-1", "-1" });
+        }
+
+        // initialize current token/pos
+        currentToken = TOKENS.get(index);
+        currentPosition = POSITION.get(index);
+
+        // parse the program as a list of statements
+        statementList();
     }
 
-    private static void DECLARATION(){
-        if (currentToken[0] == "def" ) {
+    /**
+     * Parses: statementList -> { statement }
+     * iterative to avoid deep recursion / stack overflow.
+     */
+    private static void statementList() {
+        // If currentToken is null, set the safe EOF to avoid infinite loops
+        if (currentToken == null) {
+            currentToken = new String[] { "EOF", "EOF" };
+            currentPosition = new String[] { "-1", "-1" };
+        }
+
+        while (!ifEquals(currentToken[0], "EOF")) {
+            statement();
+            // defensive check: if parsing did not advance, break to avoid infinite loop
+            if (index >= TOKENS.size() - 1 && ifEquals(currentToken[0], "EOF"))
+                break;
+        }
+    }
+
+    private static void statement() {
+        if (currentToken == null || ifEquals(currentToken[0], "EOF")) {
+            return; // <-- REQUIRED FIX
+        }
+
+        if (ifEquals(currentToken[1], "IDENTIFIER")) {
+            Assignement();
+            return;
+        } else if (ifEquals(currentToken[0], "while")) {
+            Whileloop();
+            return;
+        } else if (ifEquals(currentToken[0], "NEWLINE")) {
+            Emptyline();
+            return;
+        } else if (ifEquals(currentToken[0], "def") || ifEquals(currentToken[0], "class")) {
+            // Declaration or function/class parsing goes here (not implemented)
+            // For now, just consume a token to avoid infinite loop
             nextToken();
-            if (currentToken[1] == "IDENTIFIER") {
+            return;
+        } else {
+            Error_handler.setSyntaxErrorMessage(UNKNOWN_ERROR,
+                    currentToken != null ? currentToken[0] : "null",
+                    currentPosition != null ? currentPosition[0] : "-1",
+                    currentPosition != null ? currentPosition[1] : "-1");
+            nextToken();
+            return;
+        }
+    }
+
+    private static void Emptyline() {
+        if (ifEquals(currentToken[0], "NEWLINE")) {
+            nextToken();
+        }
+    }
+
+    private static void Assignement() {
+        // current token is IDENTIFIER (lexical class in currentToken[1])
+        if (ifEquals(currentToken[1], "IDENTIFIER")) {
+            nextToken(); // consume identifier
+            OperatorAssign(); // expect an assignment operator (or error)
+            Expression(); // parse RHS expression
+            if (ifEquals(currentToken[0], "NEWLINE") || ifEquals(currentToken[0], "EOF")) {
                 nextToken();
-                if (currentToken[0] == "(") {
-                 nextToken();
-                 PARAMETERS();   
-                    if (currentToken[0] == ")") {
-                        nextToken();
-                        if (currentToken[0]==":") {
-                            nextToken();
-                        }
-                        else{/*ERROR */}
-                    }
-                    else{/*ERROR */}
-                }   
-                else{/*ERROR */}
-            }
-            else{/*ERROR */}
-        }
-        else if (currentToken[0]=="class") {
-            nextToken();
-            if (currentToken[1]=="IDENTIFIER") {
+            } else {
+                Error_handler.setSyntaxErrorMessage(EXPECTED_NEWLINE,
+                        currentToken != null ? currentToken[0] : "null",
+                        currentPosition != null ? currentPosition[0] : "-1",
+                        currentPosition != null ? currentPosition[1] : "-1");
+                // try to recover by consuming the current token
                 nextToken();
-                if (currentToken[0]==":") {
-                    nextToken();
-                }
-                else{/*ERROR */}
             }
         }
-        else{/*ERROR */}
     }
 
-    private static void PARAMETERS(){
-        if (VALUE()=="ID" || VALUE() == "CONST" || VALUE() == "EXP") {
-            nextToken();
-            MORE_PARAMETERS();
-        }
-        else{/*ERROR */}
-    }
+    private static void OperatorAssign() {
+        String[] operators = { "=", "+=", "-=", "*=", "/=", "%=" };
 
-    private static String VALUE(){
-        if (currentToken[1] == "IDENTIFIER") {
-            nextToken();
-            if (currentToken[0]=="(") {
-                PARAMETER_FUNC_CALL();
-            }
-            
-            return "ID";
-        }
-        if (currentToken[1]=="STRING" || currentToken[1]=="INTEGER" || currentToken[1]=="FLOAT" || currentToken[1]=="BOOLEAN" || currentToken[0]=="None") {
-            return "CONST";
-        }
-        if (currentToken[0]=="(") {
-            nextToken();
-            EXPRESSION();
-            if (currentToken[0]==")") {
-                return "EXP";
-            }
-            else{/*ERROR */}
-        }
-
-        return "error";
-    }
-
-    private static void MORE_PARAMETERS(){
-        if (currentToken[0]==",") {
-            nextToken();
-            if (VALUE()=="ID" || VALUE() == "CONST" || VALUE() == "EXP") {
+        for (String op : operators) {
+            if (ifEquals(currentToken[0], op)) {
                 nextToken();
-                MORE_PARAMETERS();
+                return;
             }
-            else{/* ERROR*/}
         }
-        else{/*ERROR */}
-    }
 
-    private static void PARAMETER_FUNC_CALL(){
-        if (currentToken[0]=="(") {
-            nextToken();
-                PARAMETERS();
-                if (currentToken[0]==")") {
-                    nextToken();
-                    
-                    if (currentToken[0]==";") {
-                        nextToken();   
-                     }
+        Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
+                currentToken != null ? currentToken[0] : "null",
+                currentPosition != null ? currentPosition[0] : "-1",
+                currentPosition != null ? currentPosition[1] : "-1");
 
-                }
-                else{/*ERROR */}
-            
-        }
-        else{/*ERROR */}
-    }
-
-    private static void ASSIGNING(){
-     if (currentToken[0] == "=") {
+        // try to recover by consuming the token
         nextToken();
-        if (currentToken[1]=="IDENTIFIER") {
+    }
+
+    /**
+     * Expression -> Term { ( + | - | * | / | % ) Term }
+     * This is iterative and handles a chain of binary ops.
+     */
+    private static void Expression() {
+        Term();
+
+        // loop while current token is a binary arithmetic operator
+        while (currentToken != null && (ifEquals(currentToken[0], "+") ||
+                ifEquals(currentToken[0], "-") ||
+                ifEquals(currentToken[0], "*") ||
+                ifEquals(currentToken[0], "/") ||
+                ifEquals(currentToken[0], "%"))) {
+            // consume operator
             nextToken();
-            if (currentToken[0]=="(") {
-                PARAMETER_FUNC_CALL();
+            // parse the next term (if missing, report error)
+            if (currentToken == null ||
+                    !(ifEquals(currentToken[1], "IDENTIFIER") ||
+                            ifEquals(currentToken[1], "INTEGER") ||
+                            ifEquals(currentToken[1], "FLOAT") ||
+                            ifEquals(currentToken[1], "BOOLEAN") ||
+                            ifEquals(currentToken[0], "None") ||
+                            ifEquals(currentToken[1], "STRING") ||
+                            ifEquals(currentToken[0], "("))) {
+                Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
+                        currentToken != null ? currentToken[0] : "null",
+                        currentPosition != null ? currentPosition[0] : "-1",
+                        currentPosition != null ? currentPosition[1] : "-1");
+                // try to continue
+            } else {
+                Term();
             }
-            
-            if (currentToken[0]==";") {
-             nextToken();   
-            }    
         }
-        else if (VALUE() == "CONST" || VALUE() == "EXP") {
+    }
+
+    private static void ExpressionPrime() {
+        // no longer used (kept for compatibility). Expression() handles repetition
+        // iteratively.
+    }
+
+    private static void Term() {
+        if (currentToken == null) {
+            // unexpected end
+            Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN, "EOF", "-1", "-1");
+            return;
+        }
+
+        if (ifEquals(currentToken[1], "IDENTIFIER")
+                || ifEquals(currentToken[1], "INTEGER")
+                || ifEquals(currentToken[1], "FLOAT")
+                || ifEquals(currentToken[1], "BOOLEAN")
+                || ifEquals(currentToken[0], "None")
+                || ifEquals(currentToken[1], "STRING")) {
             nextToken();
+            return;
+        } else if (ifEquals(currentToken[0], "(")) {
+            nextToken();
+            Expression();
+            if (ifEquals(currentToken[0], ")")) {
+                nextToken();
+                return;
+            } else {
+                Error_handler.setSyntaxErrorMessage(EXPECTED_PARANTHESE_CLOSING,
+                        currentToken != null ? currentToken[0] : "null",
+                        currentPosition != null ? currentPosition[0] : "-1",
+                        currentPosition != null ? currentPosition[1] : "-1");
+                // attempt to recover
+                nextToken();
+                return;
+            }
+        } else {
+            Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
+                    currentToken != null ? currentToken[0] : "null",
+                    currentPosition != null ? currentPosition[0] : "-1",
+                    currentPosition != null ? currentPosition[1] : "-1");
+            nextToken();
+            return;
         }
-        else{/*ERROR */}
-     }   
-     else if (COMBINED_OPERATOR(currentToken[0])) {
+    }
+
+    private static void Whileloop() {
+        if (ifEquals(currentToken[0], "while")) {
+            nextToken();
+            Condition();
+            if (ifEquals(currentToken[0], ":")) {
+                nextToken();
+                if (ifEquals(currentToken[0], "NEWLINE")) {
+                    nextToken();
+                    Block();
+                } else {
+                    Error_handler.setSyntaxErrorMessage(EXPECTED_NEWLINE,
+                            currentToken != null ? currentToken[0] : "null",
+                            currentPosition != null ? currentPosition[0] : "-1",
+                            currentPosition != null ? currentPosition[1] : "-1");
+                    // try to recover
+                    nextToken();
+                }
+            } else {
+                Error_handler.setSyntaxErrorMessage(EXPECTED_COLON,
+                        currentToken != null ? currentToken[0] : "null",
+                        currentPosition != null ? currentPosition[0] : "-1",
+                        currentPosition != null ? currentPosition[1] : "-1");
+                nextToken();
+            }
+        }
+    }
+
+    private static void Condition() {
+        if (ifEquals(currentToken[0], "not")) {
+            nextToken();
+            Expression();
+        } else {
+            // a simple condition: expression comp-operator expression
+            Expression();
+            CompOperator();
+            Expression();
+        }
+    }
+
+    private static void CompOperator() {
+        String[] operators = { "==", "!=", "<", ">", "<=", ">=", "and", "or" };
+
+        for (String op : operators) {
+            if (ifEquals(currentToken[0], op)) {
+                nextToken();
+                return;
+            }
+        }
+
+        Error_handler.setSyntaxErrorMessage(EXPECTED_LOGICAL_OP,
+                currentToken != null ? currentToken[0] : "null",
+                currentPosition != null ? currentPosition[0] : "-1",
+                currentPosition != null ? currentPosition[1] : "-1");
+
+        // try to recover
         nextToken();
-        if (VALUE()=="ID" || VALUE()=="CONST" || VALUE()=="EXP") {
-            nextToken();
-            if (currentToken[0]==";") {
-             nextToken();   
-            }
-        }
-        else{/*ERROR */}
-     }
-     else{/*ERROR */}
     }
 
-    private static void EXPRESSION(){
-        if (VALUE()=="ID" || VALUE()=="CONST" || VALUE()=="EXP") {
-            nextToken();
-            if (AR_LO_OPERATOR(currentToken[0])) {
+    /**
+     * Very small, conservative Block() implementation:
+     * - consumes statements until a DEDENT token or EOF is encountered.
+     * - if your lexical analyzer uses a different mechanism for blocks
+     * (braces, indentation tokens named differently), adapt this accordingly.
+     */
+    private static void Block() {
+        // consume indented statements until we reach a DEDENT or EOF
+        while (!ifEquals(currentToken[0], "EOF") && !ifEquals(currentToken[0], "DEDENT")) {
+            statement();
+            // Defensive break: if we somehow didn't advance and have a token that cannot be
+            // parsed, consume one token
+            // to avoid infinite loop.
+            if (index >= TOKENS.size() - 1 && !ifEquals(currentToken[0], "EOF")) {
                 nextToken();
-                if (VALUE() == "ID" || VALUE() == "CONST" || VALUE()=="EXP") {
-                    nextToken();
-                    MORE_OPERANDS();
-                }
-                else{/*ERROR */}
             }
-            else{/*ERROR */}
         }
-        else{/*ERROR */}
-    }
 
-    private static void MORE_OPERANDS(){
-        if (AR_LO_OPERATOR(currentToken[0])) {
+        // If we found a DEDENT token, consume it
+        if (ifEquals(currentToken[0], "DEDENT")) {
             nextToken();
-            if (VALUE() == "ID" || VALUE() == "CONST" || VALUE()=="EXP") {
-                nextToken();
-                MORE_OPERANDS();
-                if (currentToken[0]==";") {
-                    nextToken();
-                }
-            }
-            else{/*ERROR */}
         }
     }
-
-    private static void MAIN_INSTRUCTION(){
-        if (currentToken[0]=="while") {
-            nextToken();
-                
-                CONDITION();
-                
-                    if (currentToken[0]==":") {
-                        nextToken();
-                    }
-                    else{/*ERROR */}
-                
-                
-        }
-    }
-
-    private static void CONDITION(){
-        if (currentToken[1]=="IDENTIFIER") {
-            nextToken();
-            if (currentToken[0]=="(") {
-                PARAMETER_FUNC_CALL();
-            }
-            if (currentToken[0]=="and" || currentToken[0]=="or") {
-                nextToken();
-        if (currentToken[1]=="IDENTIFIER") {
-            nextToken();
-            if (currentToken[0]=="(") {
-                PARAMETER_FUNC_CALL();
-            }
-        }
-            }
-            else{/*ERROR */}
-        }
-        else if() {}
-        else{}
-    }
-
 }
