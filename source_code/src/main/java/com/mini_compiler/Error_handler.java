@@ -75,6 +75,11 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
             ALL_ERRORS.add(syntax_error_message);
             break;      
 
+        case 8:  syntax_error_message += "Expected condition before '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;      
+
+            
         default:
             syntax_error_message = "Unknown Syntax Error at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);

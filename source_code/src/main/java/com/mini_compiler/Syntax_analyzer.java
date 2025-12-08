@@ -18,13 +18,13 @@ public class Syntax_analyzer {
     private static final int UNEXPECTED_TOKEN = 0;
     private static final int EXPECTED_NEWLINE = 1;
     private static final int EXPECTED_PARANTHESE_CLOSING = 2;
-    private static final int EXPECTED_SPACE = 6;
-    private static final int EXPECTED_DEDENT = 7;
     private static final int EXPECTED_COLON = 3;
     private static final int EXPECTED_LOGICAL_OP = 4;
     private static final int SPECIAL_KEYWORD = 5;
+    private static final int EXPECTED_SPACE = 6;
+    private static final int EXPECTED_DEDENT = 7;
+    private static final int EXPECTED_CONDITION = 8;
     private static final int UNKNOWN_ERROR = -1;
-    
 
     /**
      * Advance to next token. If we advance past the provided token lists,
@@ -107,11 +107,16 @@ public class Syntax_analyzer {
 
     private static void statement() {
         if (currentToken == null || ifEquals(currentToken[0], "EOF")) {
-            return; // 
+            return; //
         }
-        
-        if (ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
-           Error_handler.setSyntaxErrorMessage(SPECIAL_KEYWORD,
+
+        if (ifEquals(currentToken[1], "INDENT") || ifEquals(currentToken[1], "DEDENT")) {
+            nextToken();
+            return;
+        }
+
+        else if (ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+            Error_handler.setSyntaxErrorMessage(SPECIAL_KEYWORD,
                     currentToken != null ? currentToken[0] : "null",
                     currentPosition != null ? currentPosition[0] : "-1",
                     currentPosition != null ? currentPosition[1] : "-1");
@@ -129,12 +134,12 @@ public class Syntax_analyzer {
             Emptyline();
             return;
         } else if (ifEquals(currentToken[0], "def") || ifEquals(currentToken[0], "class")) {
-           //Declaration();
+            // Declaration();
             nextToken();
             return;
         } else {
             Error_handler.setSyntaxErrorMessage(UNKNOWN_ERROR,
-                    currentToken != null ? currentToken[0] : "null",currentPosition[0],
+                    currentToken != null ? currentToken[0] : "null", currentPosition[0],
                     currentPosition != null ? currentPosition[1] : "-1");
             nextToken();
             return;
@@ -228,7 +233,7 @@ public class Syntax_analyzer {
     private static void Term() {
         if (currentToken == null) {
             // unexpected end
-          
+
             return;
         }
 
@@ -280,7 +285,7 @@ public class Syntax_analyzer {
                             currentToken != null ? currentToken[0] : "null",
                             currentPosition != null ? currentPosition[0] : "-1",
                             currentPosition != null ? currentPosition[1] : "-1");
-                    
+
                     nextToken();
                     return;
                 }
@@ -296,7 +301,14 @@ public class Syntax_analyzer {
     }
 
     private static void Condition() {
-        if (ifEquals(currentToken[0], "not")) {
+       if (ifEquals(currentToken[0], ":")) {
+         Error_handler.setSyntaxErrorMessage(EXPECTED_CONDITION,
+                        currentToken != null ? currentToken[0] : "null",
+                        currentPosition != null ? currentPosition[0] : "-1",
+                        currentPosition != null ? currentPosition[1] : "-1");
+                return;
+       }
+       else if (ifEquals(currentToken[0], "not")) {
             nextToken();
             Expression();
         } else {
@@ -325,46 +337,41 @@ public class Syntax_analyzer {
         nextToken();
     }
 
-    /**
-     * Very small, conservative Block() implementation:
-     * - consumes statements until a DEDENT token or EOF is encountered.
-     * - if your lexical analyzer uses a different mechanism for blocks
-     * (braces, indentation tokens named differently), adapt this accordingly.
-     */
-   private static void Block() {
+    private static void Block() {
 
-    // 1. Le bloc DOIT commencer par INDENT
-    if (!ifEquals(currentToken[0], "INDENT")) {
-        Error_handler.setSyntaxErrorMessage(EXPECTED_SPACE, currentToken[0], currentPosition[0], currentPosition[1]);
-        return;
-    }
-    nextToken(); // consomme INDENT
-
-    // 2. statementlist : on lit des statements jusqu'à DEDENT
-    while (!ifEquals(currentToken[0], "DEDENT") &&
-           !ifEquals(currentToken[0], "EOF")) {
-
-        statement();
-
-        // Après chaque statement, on s'attend à NEWLINE
-        if (ifEquals(currentToken[0], "NEWLINE")) {
-            nextToken();
-        } 
-        else if (!ifEquals(currentToken[0], "DEDENT")) {
-            // S'il manque le NEWLINE, erreur syntaxique
-            Error_handler.setSyntaxErrorMessage(EXPECTED_NEWLINE, currentToken[0], currentPosition[0], currentPosition[1]);
+        // 1. Le bloc DOIT commencer par INDENT
+        if (!ifEquals(currentToken[0], "INDENT")) {
+            Error_handler.setSyntaxErrorMessage(EXPECTED_SPACE, currentToken[0], currentPosition[0],
+                    currentPosition[1]);
             return;
         }
-    }
+        nextToken(); // consomme INDENT
 
-    // 3. Le bloc doit se terminer par un DEDENT
-    if (ifEquals(currentToken[0], "DEDENT")) {
-        nextToken(); // consomme DEDENT
-    } 
-    else {
-        // Pas de DEDENT trouvé → erreur
-        Error_handler.setSyntaxErrorMessage(EXPECTED_DEDENT, currentToken[0], currentPosition[0], currentPosition[1]);
+        // 2. statementlist : on lit des statements jusqu'à DEDENT
+        while (!ifEquals(currentToken[0], "DEDENT") &&
+                !ifEquals(currentToken[0], "EOF")) {
+
+            statement();
+
+            // Après chaque statement, on s'attend à NEWLINE
+            if (ifEquals(currentToken[0], "NEWLINE")) {
+                nextToken();
+            } else if (!ifEquals(currentToken[0], "NEWLINE")) {
+                // S'il manque le NEWLINE, erreur syntaxique
+                Error_handler.setSyntaxErrorMessage(EXPECTED_NEWLINE, currentToken[0], currentPosition[0],
+                        currentPosition[1]);
+                return;
+            }
+        }
+
+        // 3. Le bloc doit se terminer par un DEDENT
+        if (ifEquals(currentToken[0], "DEDENT")) {
+            nextToken(); // consomme DEDENT
+        } else {
+            // Pas de DEDENT trouvé → erreur
+            Error_handler.setSyntaxErrorMessage(EXPECTED_DEDENT, currentToken[0], currentPosition[0],
+                    currentPosition[1]);
+        }
     }
-}
 
 }

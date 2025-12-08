@@ -310,38 +310,27 @@ private static int countIndent(String line) {
                 input = scan.nextLine() + " ^"; //the character ^ means the end of a line
                 index = 0;
                 count_lines++;
-        if (!ifEquals(input, " ^")) {
-                     int firstNonSpaceIndex = 0;
-        while (firstNonSpaceIndex < input.length() && input.charAt(firstNonSpaceIndex) == ' ') {
-            firstNonSpaceIndex++;
-        }
-            int current_indent = countIndent(input.substring(0, firstNonSpaceIndex));
-
-
-            int previous_indent = indent_stack.get(indent_stack.size() - 1);
-
-    // Si le bloc augmente (ex: après un while)
-        if (current_indent > previous_indent) {
-            indent_stack.add(current_indent);
-            TOKENS.add(new String[]{"INDENT", "INDENT"});
-             POSITION.add(new String[]{Integer.toString(count_lines), Integer.toString(firstNonSpaceIndex + 1)}); // position de l'indent
-            }
-
-    // Si le bloc se termine
-        while (current_indent < previous_indent) {
-            indent_stack.remove(indent_stack.size() - 1);
-            previous_indent = indent_stack.get(indent_stack.size() - 1);
-
-             TOKENS.add(new String[]{"DEDENT", "DEDENT"});
-                 POSITION.add(new String[]{Integer.toString(count_lines), "1"}); // colonne 1 pour le début du DEDENT
-        }
-        }  
         
-        else{if(ifEquals(input, " ^") || input.charAt(index)=='^'){
-                        TOKENS.add(new String[]{"NEWLINE","NEWLINE"});
-                    }}
-     
+                if (!ifEquals(input, " ^")) {
+                tc = input.charAt(index);
+                
+                if (tc == ' ' || tc == '\t') {
+                    line_number = count_lines;
+                    column_number = 1; 
+                TOKENS.add(new String[]{"INDENT", "INDENT"});
+                POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
+                }
 
+    
+                else {
+                    line_number = count_lines;
+                    column_number = 1; 
+                    TOKENS.add(new String[]{"DEDENT", "DEDENT"});
+                    POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
+                }
+        }  
+     
+                index = 0;
 
                 while (!ifEquals(input," ^") && input.charAt(index) != '^' && input.charAt(index) != '#') {
 
@@ -465,16 +454,15 @@ private static int countIndent(String line) {
                         }
                         
                 }
-                    
+                    if (input.charAt(index) == '^' || ifEquals(input, " ^")) {
+                            line_number = count_lines;
+                            column_number = index + 1 - (lexical_unit.length());
+                            TOKENS.add(new String[]{"NEWLINE", "NEWLINE"});
+                             POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
+                    }
                 
 
             }
-           while (indent_stack.size() > 1) {
-    indent_stack.remove(indent_stack.size() - 1);
-    TOKENS.add(new String[]{"DEDENT", "DEDENT"});  // une seule fois (2 DEDENT comme demandé)
-    POSITION.add(new String[]{Integer.toString(count_lines), "1"}); // colonne 1 pour les dedent finaux
-}
-
 
             scan.close();
         } catch (FileNotFoundException e) {
