@@ -30,10 +30,36 @@ public class Lexical_analyzer {
 
     private static int line_number = 0;
     private static int column_number = 0;
+    private static int indent_number = 0;
+    private static int dedent_number = 0;
+  
+    private static List<Integer> indent_stack = new ArrayList<>();
+static {
+    indent_stack.add(0); // indentation de base
+}
+
+private static int countIndent(String line) {
+    int c = 0;
+    while (c < line.length() && line.charAt(c) == ' ') {
+        c++;
+    }
+    return c;
+}
+
+
+ 
 
     //file path extractor 
     public static File getFilePath(File file){
         return file;
+    }
+
+    public static int getIndentnumber(){
+        return indent_number;
+    }
+
+    public static int getDedentnumber(){
+        return dedent_number;
     }
 
     // current character checker for float indicator only
@@ -284,7 +310,38 @@ public class Lexical_analyzer {
                 input = scan.nextLine() + " ^"; //the character ^ means the end of a line
                 index = 0;
                 count_lines++;
-                
+        if (!ifEquals(input, " ^")) {
+                     int firstNonSpaceIndex = 0;
+        while (firstNonSpaceIndex < input.length() && input.charAt(firstNonSpaceIndex) == ' ') {
+            firstNonSpaceIndex++;
+        }
+            int current_indent = countIndent(input.substring(0, firstNonSpaceIndex));
+
+
+            int previous_indent = indent_stack.get(indent_stack.size() - 1);
+
+    // Si le bloc augmente (ex: après un while)
+        if (current_indent > previous_indent) {
+            indent_stack.add(current_indent);
+            TOKENS.add(new String[]{"INDENT", "INDENT"});
+             POSITION.add(new String[]{Integer.toString(count_lines), Integer.toString(firstNonSpaceIndex + 1)}); // position de l'indent
+            }
+
+    // Si le bloc se termine
+        while (current_indent < previous_indent) {
+            indent_stack.remove(indent_stack.size() - 1);
+            previous_indent = indent_stack.get(indent_stack.size() - 1);
+
+             TOKENS.add(new String[]{"DEDENT", "DEDENT"});
+                 POSITION.add(new String[]{Integer.toString(count_lines), "1"}); // colonne 1 pour le début du DEDENT
+        }
+        }  
+        
+        else{if(ifEquals(input, " ^") || input.charAt(index)=='^'){
+                        TOKENS.add(new String[]{"NEWLINE","NEWLINE"});
+                    }}
+     
+
 
                 while (!ifEquals(input," ^") && input.charAt(index) != '^' && input.charAt(index) != '#') {
 
@@ -408,12 +465,17 @@ public class Lexical_analyzer {
                         }
                         
                 }
-                    if(ifEquals(input, " ^") || input.charAt(index)=='^'){
-                        TOKENS.add(new String[]{"NEWLINE","NEWLINE"});
-                    }
+                    
                 
 
             }
+           while (indent_stack.size() > 1) {
+    indent_stack.remove(indent_stack.size() - 1);
+    TOKENS.add(new String[]{"DEDENT", "DEDENT"});  // une seule fois (2 DEDENT comme demandé)
+    POSITION.add(new String[]{Integer.toString(count_lines), "1"}); // colonne 1 pour les dedent finaux
+}
+
+
             scan.close();
         } catch (FileNotFoundException e) {
           Error_handler.setLexicalErrorMessage(FILE_NOT_FOUND_ERROR, "", 0, 0);

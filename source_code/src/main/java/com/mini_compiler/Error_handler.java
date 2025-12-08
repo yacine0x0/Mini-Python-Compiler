@@ -61,6 +61,20 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
             ALL_ERRORS.add(syntax_error_message);
             break;  
 
+        case 5:
+            syntax_error_message = "Thanks for mentioning author's name '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;  
+        case 6:
+            syntax_error_message += "Expected space before '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;  
+
+        case 7:
+            syntax_error_message += "Expected return to line at '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;      
+
         default:
             syntax_error_message = "Unknown Syntax Error at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);
