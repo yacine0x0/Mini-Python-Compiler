@@ -66,12 +66,15 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
             ALL_ERRORS.add(syntax_error_message);
             break;  
         case 6:
-            syntax_error_message += "Expected space before '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            if (token.equals("EOF")) {
+                syntax_error_message = "";
+            }
+            else{syntax_error_message += "Expected space before '" + token + "' at line " + line_number + ", column " + column_number + ".\n";}
             ALL_ERRORS.add(syntax_error_message);
             break;  
 
         case 7:
-            syntax_error_message += "Expected return to line at '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            syntax_error_message += "Expected return to line at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);
             break;      
 
@@ -79,6 +82,13 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
             ALL_ERRORS.add(syntax_error_message);
             break;      
 
+        case 9: if (token.equals("EOF")) {
+            syntax_error_message += "Expected at least one instruction in while block.\n";
+
+        }  
+        else{syntax_error_message += "Expected at least one instruction in while block at line " + line_number + ", column " + column_number + ".\n";}
+            ALL_ERRORS.add(syntax_error_message);
+            break;      
             
         default:
             syntax_error_message = "Unknown Syntax Error at line " + line_number + ", column " + column_number + ".\n";

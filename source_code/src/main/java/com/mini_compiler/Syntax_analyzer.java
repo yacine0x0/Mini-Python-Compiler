@@ -24,6 +24,7 @@ public class Syntax_analyzer {
     private static final int EXPECTED_SPACE = 6;
     private static final int EXPECTED_DEDENT = 7;
     private static final int EXPECTED_CONDITION = 8;
+    private static final int EXPECTED_ATLEAST_ONE_INSTRUCTION = 9;
     private static final int UNKNOWN_ERROR = -1;
 
     /**
@@ -91,11 +92,11 @@ public class Syntax_analyzer {
     }
 
     private static void statementList() {
-        // If currentToken is null, set the safe EOF to avoid infinite loops
+     /*   // If currentToken is null, set the safe EOF to avoid infinite loops
         if (currentToken == null) {
             currentToken = new String[] { "EOF", "EOF" };
             currentPosition = new String[] { "-1", "-1" };
-        }
+        } */
 
         while (!ifEquals(currentToken[0], "EOF")) {
             statement();
@@ -339,39 +340,57 @@ public class Syntax_analyzer {
 
     private static void Block() {
 
+        while (ifEquals(currentToken[0], "NEWLINE")) {
+            nextToken();
+        }
+
         // 1. Le bloc DOIT commencer par INDENT
+        if (ifEquals(currentToken[0], "EOF")) {
+             Error_handler.setSyntaxErrorMessage(EXPECTED_ATLEAST_ONE_INSTRUCTION, currentToken[0], currentPosition[0],
+                    currentPosition[1]); 
+        }
+
         if (!ifEquals(currentToken[0], "INDENT")) {
+            if (ifEquals(currentToken[0], "DEDENT")) {
+                nextToken();
+            }
             Error_handler.setSyntaxErrorMessage(EXPECTED_SPACE, currentToken[0], currentPosition[0],
                     currentPosition[1]);
             return;
         }
         nextToken(); // consomme INDENT
 
+     if (ifEquals(currentToken[0], "NEWLINE")) {
+        Error_handler.setSyntaxErrorMessage(EXPECTED_ATLEAST_ONE_INSTRUCTION, currentToken[0], currentPosition[0],
+                    currentPosition[1]); nextToken();
+     }
+
         // 2. statementlist : on lit des statements jusqu'à DEDENT
         while (!ifEquals(currentToken[0], "DEDENT") &&
                 !ifEquals(currentToken[0], "EOF")) {
 
+                    
             statement();
 
-            // Après chaque statement, on s'attend à NEWLINE
-            if (ifEquals(currentToken[0], "NEWLINE")) {
-                nextToken();
-            } else if (!ifEquals(currentToken[0], "NEWLINE")) {
-                // S'il manque le NEWLINE, erreur syntaxique
-                Error_handler.setSyntaxErrorMessage(EXPECTED_NEWLINE, currentToken[0], currentPosition[0],
-                        currentPosition[1]);
-                return;
-            }
         }
 
-        // 3. Le bloc doit se terminer par un DEDENT
-        if (ifEquals(currentToken[0], "DEDENT")) {
-            nextToken(); // consomme DEDENT
-        } else {
+
+        if (ifEquals(currentToken[0], "EOF")) {
+            return;
+        }
+        
+        else if (ifEquals(currentToken[0], "DEDENT") || ifEquals(currentToken[0], "EOF")) {
+                    nextToken(); // consomme DEDENT
+            } 
+            else {
             // Pas de DEDENT trouvé → erreur
             Error_handler.setSyntaxErrorMessage(EXPECTED_DEDENT, currentToken[0], currentPosition[0],
-                    currentPosition[1]);
-        }
+                    currentPosition[1]); nextToken();
+                 }
+   
+
+        
+   
     }
 
 }

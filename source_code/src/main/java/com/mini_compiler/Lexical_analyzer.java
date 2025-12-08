@@ -16,13 +16,16 @@ import java.net.URISyntaxException;
 
 public class Lexical_analyzer {
 
-    private static final String[] KEYWORDS = { "if", "else", "switch", "while", "do", "class","import", "break","self","contine", "def", "return", "for", "finally", "elif", "from", "try", "as", "except", "raise","int","str","float","boolean","pass"};
+    private static final String[] KEYWORDS = { "if", "else", "switch", "while", "do", "class", "import", "break",
+            "self", "contine", "def", "return", "for", "finally", "elif", "from", "try", "as", "except", "raise", "int",
+            "str", "float", "boolean", "pass" };
     private static final String[] SPECIAL_KEYWORD = { "Yacine", "Madani" };
-    private static final String[] OPERATORS = {"and","not","<<=", ">>=", "**=","//=", "or","==", "!=", ">=", "<=","//","**","<<", ">>","+=","%=", "-=","*=", "/=","=","+", "-", "*", "/", "%", ">", "<","!"};
-    private static final String[] SEPARATORS = { ".",";", ",", ":", "(", ")", "{", "}", "[", "]", "@" };
+    private static final String[] OPERATORS = { "and", "not", "<<=", ">>=", "**=", "//=", "or", "==", "!=", ">=", "<=",
+            "//", "**", "<<", ">>", "+=", "%=", "-=", "*=", "/=", "=", "+", "-", "*", "/", "%", ">", "<", "!" };
+    private static final String[] SEPARATORS = { ".", ";", ",", ":", "(", ")", "{", "}", "[", "]", "@" };
 
-    public static List<String[]> TOKENS = new ArrayList<>(); //list to store tokens
-    public static List<String[]> POSITION = new ArrayList<>(); //list to store tokens
+    public static List<String[]> TOKENS = new ArrayList<>(); // list to store tokens
+    public static List<String[]> POSITION = new ArrayList<>(); // list to store tokens
 
     private static final int FILE_NOT_FOUND_ERROR = 0;
     private static final int TOKEN_ERROR = 1;
@@ -32,33 +35,30 @@ public class Lexical_analyzer {
     private static int column_number = 0;
     private static int indent_number = 0;
     private static int dedent_number = 0;
-  
+
     private static List<Integer> indent_stack = new ArrayList<>();
-static {
-    indent_stack.add(0); // indentation de base
-}
-
-private static int countIndent(String line) {
-    int c = 0;
-    while (c < line.length() && line.charAt(c) == ' ') {
-        c++;
+    static {
+        indent_stack.add(0); // indentation de base
     }
-    return c;
-}
 
+    private static int countIndent(String line) {
+        int c = 0;
+        while (c < line.length() && line.charAt(c) == ' ') {
+            c++;
+        }
+        return c;
+    }
 
- 
-
-    //file path extractor 
-    public static File getFilePath(File file){
+    // file path extractor
+    public static File getFilePath(File file) {
         return file;
     }
 
-    public static int getIndentnumber(){
+    public static int getIndentnumber() {
         return indent_number;
     }
 
-    public static int getDedentnumber(){
+    public static int getDedentnumber() {
         return dedent_number;
     }
 
@@ -149,7 +149,7 @@ private static int countIndent(String line) {
     private static boolean unitIsIdentifer(String lexical_unit) {
         int[][] matrice = {
                 { 1, 1, -1, -1 },
-                { 1, 1, 1, -1 }};
+                { 1, 1, 1, -1 } };
 
         lexical_unit = lexical_unit + "#";
         int i = 0;
@@ -169,7 +169,7 @@ private static int countIndent(String line) {
     }
 
     // current character checker for strings only
-    private static int terme_string(char tc){
+    private static int terme_string(char tc) {
         if (tc == '"') {
             return 0;
         }
@@ -177,15 +177,15 @@ private static int countIndent(String line) {
     }
 
     // String data type indicator
-    private static boolean constantIsString(String lexical_unit){
+    private static boolean constantIsString(String lexical_unit) {
         lexical_unit = lexical_unit + "#";
         int i = 0;
         int etat_courant = 0;
         int vf = 2;
         int[][] matrice = {
-            {1,-1},
-            {2,1},
-            {-1,-1}
+                { 1, -1 },
+                { 2, 1 },
+                { -1, -1 }
         };
         while (lexical_unit.charAt(i) != '#' && matrice[etat_courant][terme_string(lexical_unit.charAt(i))] != -1) {
 
@@ -200,11 +200,11 @@ private static int countIndent(String line) {
         }
     }
 
-    //testing if two strings are identical
-    private static boolean ifEquals(String str1, String str2){
+    // testing if two strings are identical
+    private static boolean ifEquals(String str1, String str2) {
         int indexStr1 = 0;
         int indexStr2 = 0;
-        if (str1.length()!=str2.length()) {
+        if (str1.length() != str2.length()) {
             return false;
         }
         do {
@@ -213,77 +213,74 @@ private static int countIndent(String line) {
             }
             indexStr1++;
             indexStr2++;
-        } while (indexStr1<str1.length() && indexStr2<str2.length());
+        } while (indexStr1 < str1.length() && indexStr2 < str2.length());
         return true;
     }
 
-    //testing if string is empty
-    private static boolean ifEmpty (String lexical_unit){
+    // testing if string is empty
+    private static boolean ifEmpty(String lexical_unit) {
         lexical_unit = lexical_unit + "#";
-        if (lexical_unit == null || ifEquals(lexical_unit,"#")) {
+        if (lexical_unit == null || ifEquals(lexical_unit, "#")) {
             return true;
         }
 
         return false;
     }
 
-
     // Tokenizer method to identify the type of each lexical unit
     public static String Tokenizer(String lexical_unit) {
-        if (!ifEmpty(lexical_unit) && !ifEquals(lexical_unit," ")) {
-            
-        
-        for (String keyword : KEYWORDS) {
-            if (ifEquals(lexical_unit,keyword)) {
-                return "KEYWORD";
-            }
-        }
-        for (String special : SPECIAL_KEYWORD) {
-            if (ifEquals(lexical_unit,special)) {
-                return "SPECIAL_KEYWORD";
-            }
-        } 
-        for (String logical : OPERATORS) {
-            if (ifEquals(lexical_unit,logical)) {
-                return "OPERATOR";
-                
-            }
-        }
-        for (String separator : SEPARATORS) {
-            if (ifEquals(lexical_unit,separator)) {
-                return "SEPARATOR";
-            }
-        }
+        if (!ifEmpty(lexical_unit) && !ifEquals(lexical_unit, " ")) {
 
-        if (ifEquals(lexical_unit, "...")) {
-            return "ELLIPSIS";
-        }
+            for (String keyword : KEYWORDS) {
+                if (ifEquals(lexical_unit, keyword)) {
+                    return "KEYWORD";
+                }
+            }
+            for (String special : SPECIAL_KEYWORD) {
+                if (ifEquals(lexical_unit, special)) {
+                    return "SPECIAL_KEYWORD";
+                }
+            }
+            for (String logical : OPERATORS) {
+                if (ifEquals(lexical_unit, logical)) {
+                    return "OPERATOR";
 
-        if (ifEquals(lexical_unit,"False") || ifEquals(lexical_unit,"True")) {
-            return "BOOLEAN";
-        }
-        if (ifEquals(lexical_unit,"None")) {
-            return "None";
-        }
-        if (unitIsIdentifer(lexical_unit)) {
-            return "IDENTIFIER";
-        }
-        if (constantIsFloat(lexical_unit)) {
-            return "FLOAT";
-        }
-        if (constantIsInteger(lexical_unit)) {
-            return "INTEGER";
-        }
-        if (constantIsString(lexical_unit)) {
-            return "STRING";
-        }
-        // CALL ERROR FUNCTION HERE !!!!
+                }
+            }
+            for (String separator : SEPARATORS) {
+                if (ifEquals(lexical_unit, separator)) {
+                    return "SEPARATOR";
+                }
+            }
 
-        Error_handler.setLexicalErrorMessage(TOKEN_ERROR, lexical_unit, line_number, column_number);
+            if (ifEquals(lexical_unit, "...")) {
+                return "ELLIPSIS";
+            }
+
+            if (ifEquals(lexical_unit, "False") || ifEquals(lexical_unit, "True")) {
+                return "BOOLEAN";
+            }
+            if (ifEquals(lexical_unit, "None")) {
+                return "None";
+            }
+            if (unitIsIdentifer(lexical_unit)) {
+                return "IDENTIFIER";
+            }
+            if (constantIsFloat(lexical_unit)) {
+                return "FLOAT";
+            }
+            if (constantIsInteger(lexical_unit)) {
+                return "INTEGER";
+            }
+            if (constantIsString(lexical_unit)) {
+                return "STRING";
+            }
+            // CALL ERROR FUNCTION HERE !!!!
+
+            Error_handler.setLexicalErrorMessage(TOKEN_ERROR, lexical_unit, line_number, column_number);
+        }
+        return "error";
     }
-    return "error";
-    }
-
 
     // --- Method to analyze the given code ---
 
@@ -297,84 +294,84 @@ private static int countIndent(String line) {
         int scanning_string_line = 0;
         int count_lines = 0;
 
-        //file path for code.py
+        // file path for code.py
         File file = new File("executable/code.py");
-
-            
 
         // Scanning input from a file "code.py" located in "executable" folder
 
         try {
             Scanner scan = new Scanner(file);
-            while (scan.hasNextLine()) { //extracting line by line from code.py
-                input = scan.nextLine() + " ^"; //the character ^ means the end of a line
+            while (scan.hasNextLine()) { // extracting line by line from code.py
+                input = scan.nextLine() + " ^"; // the character ^ means the end of a line
                 index = 0;
                 count_lines++;
-        
+
                 if (!ifEquals(input, " ^")) {
-                tc = input.charAt(index);
-                
-                if (tc == ' ' || tc == '\t') {
-                    line_number = count_lines;
-                    column_number = 1; 
-                TOKENS.add(new String[]{"INDENT", "INDENT"});
-                POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
+                    tc = input.charAt(index);
+
+                    if (tc == ' ' || tc == '\t') {
+                        line_number = count_lines;
+                        column_number = 1;
+                        TOKENS.add(new String[] { "INDENT", "INDENT" });
+                        POSITION.add(new String[] { Integer.toString(line_number), Integer.toString(column_number) });
+                    }
+
+                    else {
+                        line_number = count_lines;
+                        column_number = 1;
+                        TOKENS.add(new String[] { "DEDENT", "DEDENT" });
+                        POSITION.add(new String[] { Integer.toString(line_number), Integer.toString(column_number) });
+                    }
                 }
 
-    
-                else {
-                    line_number = count_lines;
-                    column_number = 1; 
-                    TOKENS.add(new String[]{"DEDENT", "DEDENT"});
-                    POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
-                }
-        }  
-     
                 index = 0;
 
-                while (!ifEquals(input," ^") && input.charAt(index) != '^' && input.charAt(index) != '#') {
+                while (!ifEquals(input, " ^") && input.charAt(index) != '^' && input.charAt(index) != '#') {
 
-                if (scanning_string && (scanning_string_line != count_lines)) {
-                    Error_handler.setLexicalErrorMessage(UNCLOSED_STRING_ERROR, lexical_unit, scanning_string_line, column_number);
-                    //  scanning_string = false;
-                }    
-                 tc = input.charAt(index);
-
-                // Skip spaces
-                  if ((tc == ' ' || tc == '\t') && !scanning_string) {
-
-                    if (!ifEmpty(lexical_unit)) {
-
-                        line_number = count_lines;
-                        column_number = index + 1 - (lexical_unit.length());
-
-                        TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
-                        POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
-                        lexical_unit = "";
+                    if (scanning_string && (scanning_string_line != count_lines)) {
+                        Error_handler.setLexicalErrorMessage(UNCLOSED_STRING_ERROR, lexical_unit, scanning_string_line,
+                                column_number);
+                        // scanning_string = false;
                     }
-                      index++;
-                      continue;
-                  }
-                
-                  // STRING START
-                  if (tc == '"' && !scanning_string) {
-                      scanning_string = true;
-                      scanning_string_line = count_lines;
-                      
-                      if (!ifEmpty(lexical_unit)) {
+                    tc = input.charAt(index);
 
-                        line_number = count_lines;
-                        column_number = index + 1 - (lexical_unit.length());
+                    // Skip spaces
+                    if ((tc == ' ' || tc == '\t') && !scanning_string) {
 
-                        TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
-                        POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
-                        lexical_unit = "";
-                      }
+                        if (!ifEmpty(lexical_unit)) {
 
-                      lexical_unit += tc;
-                      index++;
-                      continue;
-                  }
+                            line_number = count_lines;
+                            column_number = index + 1 - (lexical_unit.length());
+
+                            TOKENS.add(new String[] { lexical_unit, Tokenizer(lexical_unit) });
+                            POSITION.add(
+                                    new String[] { Integer.toString(line_number), Integer.toString(column_number) });
+                            lexical_unit = "";
+                        }
+                        index++;
+                        continue;
+                    }
+
+                    // STRING START
+                    if (tc == '"' && !scanning_string) {
+                        scanning_string = true;
+                        scanning_string_line = count_lines;
+
+                        if (!ifEmpty(lexical_unit)) {
+
+                            line_number = count_lines;
+                            column_number = index + 1 - (lexical_unit.length());
+
+                            TOKENS.add(new String[] { lexical_unit, Tokenizer(lexical_unit) });
+                            POSITION.add(
+                                    new String[] { Integer.toString(line_number), Integer.toString(column_number) });
+                            lexical_unit = "";
+                        }
+
+                        lexical_unit += tc;
+                        index++;
+                        continue;
+                    }
 
                     // STRING CONTENT
                     if (scanning_string) {
@@ -386,87 +383,89 @@ private static int countIndent(String line) {
                             line_number = count_lines;
                             column_number = index + 1 - (lexical_unit.length());
 
-                            TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
-                            POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
+                            TOKENS.add(new String[] { lexical_unit, Tokenizer(lexical_unit) });
+                            POSITION.add(
+                                    new String[] { Integer.toString(line_number), Integer.toString(column_number) });
                             lexical_unit = "";
                         }
-                    
+
                         index++;
                         continue;
                     }
 
-                        // SEPARATOR
-                        if (Tokenizer(Character.toString(tc))=="SEPARATOR") {
-                            if (!ifEmpty(lexical_unit)) {
+                    // SEPARATOR
+                    if (Tokenizer(Character.toString(tc)) == "SEPARATOR") {
+                        if (!ifEmpty(lexical_unit)) {
 
                             line_number = count_lines;
                             column_number = index + 1 - (lexical_unit.length());
 
-                                TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
-                                POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
-                                lexical_unit = "";
-                            }
-                             do {
-                                lexical_unit += tc;
-                                index++;
-                                tc = input.charAt(index);
-                            }while (tc == '.');
-
-                                line_number = count_lines;
-                                column_number = index + 1 - (lexical_unit.length());
-
-                            TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
-                            POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
+                            TOKENS.add(new String[] { lexical_unit, Tokenizer(lexical_unit) });
+                            POSITION.add(
+                                    new String[] { Integer.toString(line_number), Integer.toString(column_number) });
                             lexical_unit = "";
-                            continue;
                         }
-
-                        // OPERATOR
-                        if (Tokenizer(Character.toString(tc))=="OPERATOR") {
-                            if (!ifEmpty(lexical_unit)) {
-
-                                line_number = count_lines;
-                                column_number = index + 1 - (lexical_unit.length());
-
-                                TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
-                                POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
-                                lexical_unit = "";
-                            }
-                            while (Tokenizer(Character.toString(tc))=="OPERATOR") {
+                        do {
                             lexical_unit += tc;
                             index++;
                             tc = input.charAt(index);
-                            }
+                        } while (tc == '.');
 
-                            line_number = count_lines;
-                            column_number = index + 1 - (lexical_unit.length());
+                        line_number = count_lines;
+                        column_number = index + 1 - (lexical_unit.length());
 
-                            TOKENS.add(new String[]{lexical_unit, Tokenizer(lexical_unit)});
-                            POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
-                            lexical_unit = "";
-                            continue;    
-                        }
-                    
-                        // DEFAULT: part of an identifier/keyword/number
-                        lexical_unit += tc;
-                        if (index < input.length()) {
-                        index++;    
-                        }
-                        
-                }
-                    if (input.charAt(index) == '^' || ifEquals(input, " ^")) {
-                            line_number = count_lines;
-                            column_number = index + 1 - (lexical_unit.length());
-                            TOKENS.add(new String[]{"NEWLINE", "NEWLINE"});
-                             POSITION.add(new String[] {Integer.toString(line_number),Integer.toString(column_number)});
+                        TOKENS.add(new String[] { lexical_unit, Tokenizer(lexical_unit) });
+                        POSITION.add(new String[] { Integer.toString(line_number), Integer.toString(column_number) });
+                        lexical_unit = "";
+                        continue;
                     }
-                
+
+                    // OPERATOR
+                    if (Tokenizer(Character.toString(tc)) == "OPERATOR") {
+                        if (!ifEmpty(lexical_unit)) {
+
+                            line_number = count_lines;
+                            column_number = index + 1 - (lexical_unit.length());
+
+                            TOKENS.add(new String[] { lexical_unit, Tokenizer(lexical_unit) });
+                            POSITION.add(
+                                    new String[] { Integer.toString(line_number), Integer.toString(column_number) });
+                            lexical_unit = "";
+                        }
+                        while (Tokenizer(Character.toString(tc)) == "OPERATOR") {
+                            lexical_unit += tc;
+                            index++;
+                            tc = input.charAt(index);
+                        }
+
+                        line_number = count_lines;
+                        column_number = index + 1 - (lexical_unit.length());
+
+                        TOKENS.add(new String[] { lexical_unit, Tokenizer(lexical_unit) });
+                        POSITION.add(new String[] { Integer.toString(line_number), Integer.toString(column_number) });
+                        lexical_unit = "";
+                        continue;
+                    }
+
+                    // DEFAULT: part of an identifier/keyword/number
+                    lexical_unit += tc;
+                    if (index < input.length()) {
+                        index++;
+                    }
+
+                }
+                if (input.charAt(index) == '^' || ifEquals(input, " ^")) {
+                    line_number = count_lines;
+                    column_number = index + 1 - (lexical_unit.length());
+                    TOKENS.add(new String[] { "NEWLINE", "NEWLINE" });
+                    POSITION.add(new String[] { Integer.toString(line_number), Integer.toString(column_number) });
+                }
 
             }
 
             scan.close();
         } catch (FileNotFoundException e) {
-          Error_handler.setLexicalErrorMessage(FILE_NOT_FOUND_ERROR, "", 0, 0);
+            Error_handler.setLexicalErrorMessage(FILE_NOT_FOUND_ERROR, "", 0, 0);
         }
 
     }
