@@ -164,11 +164,5 @@ public class Inter_graphique extends JFrame {
 
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Inter_graphique gui = new Inter_graphique();
-            gui.setVisible(true);
-        });
-    }
 
 }

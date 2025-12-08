@@ -137,7 +137,8 @@ public class Syntax_analyzer {
             Emptyline();
             return;
         } else if (ifEquals(currentToken[0], "def") || ifEquals(currentToken[0], "class")) {
-           Declaration();
+           
+            Declaration();
             return;
         } else {
             Error_handler.setSyntaxErrorMessage(UNKNOWN_ERROR,
@@ -174,9 +175,11 @@ public class Syntax_analyzer {
             else{Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
                             currentToken != null ? currentToken[0] : "null", currentPosition[0],
                             currentPosition != null ? currentPosition[1] : "-1");
+                            
                             nextToken();}
         }
         else if (ifEquals(currentToken[0], "def")) {
+            nextToken();
                     if (ifEquals(currentToken[1], "IDENTIFIER")) {
                         nextToken();
                         if (ifEquals(currentToken[0], "(")) {
@@ -214,6 +217,7 @@ public class Syntax_analyzer {
                         else{Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
                                    currentToken != null ? currentToken[0] : "null", currentPosition[0],
                                     currentPosition != null ? currentPosition[1] : "-1");
+                                    
                                       nextToken();}
         }
     }
@@ -226,13 +230,23 @@ public class Syntax_analyzer {
                             ifEquals(currentToken[0], "None") ||
                             ifEquals(currentToken[1], "STRING")) {
             nextToken();
-            PARAMETERSPRIME();
+            if (ifEquals(currentToken[0], ",")) {
+            PARAMETERSPRIME();    
+            }
+            
+            return;
+        }
+        else if (ifEquals(currentToken[0], ")")) {
             return;
         }
         else{Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
                             currentToken != null ? currentToken[0] : "null", currentPosition[0],
                             currentPosition != null ? currentPosition[1] : "-1");
-                            nextToken(); return;}
+                            nextToken();
+                                if (ifEquals(currentToken[0], ",") || ifEquals(currentToken[0], ")")) {
+                                                PARAMETERSPRIME();    
+                                            } 
+                            return;}
     }
 
     private static void PARAMETERSPRIME(){
@@ -338,6 +352,7 @@ public class Syntax_analyzer {
                         currentToken != null ? currentToken[0] : "null",
                         currentPosition != null ? currentPosition[0] : "-1",
                         currentPosition != null ? currentPosition[1] : "-1");
+                        nextToken();
                 // try to continue
             } else {
                 
@@ -437,10 +452,14 @@ public class Syntax_analyzer {
     private static void Condition() {
         if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "STRING") || ifEquals(currentToken[1], "INTEGER") || ifEquals(currentToken[1], "FLOAT") || ifEquals(currentToken[1], "BOOLEAN") || ifEquals(currentToken[0], "None") ) {
             nextToken();
-            return;
+            if (ifEquals(currentToken[0], "and") || ifEquals(currentToken[0], "or") || ifEquals(currentToken[0], "==")
+            || ifEquals(currentToken[0], "!=") || ifEquals(currentToken[0], "<=") || ifEquals(currentToken[0], ">=") || ifEquals(currentToken[0], "<") || ifEquals(currentToken[0], ">")) {
+                CompOperator();
+                Expression();
+            }
         }
 
-        if (ifEquals(currentToken[0], ":")) {
+        else if (ifEquals(currentToken[0], ":")) {
          Error_handler.setSyntaxErrorMessage(EXPECTED_CONDITION,
                         currentToken != null ? currentToken[0] : "null",
                         currentPosition != null ? currentPosition[0] : "-1",
@@ -474,6 +493,7 @@ public class Syntax_analyzer {
 
         // try to recover
         nextToken();
+        return;
     }
 
     private static void Block() {

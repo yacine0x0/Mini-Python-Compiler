@@ -15,20 +15,10 @@ public class Main {
 
     public static void main(String[] args) {
 
-       try {
-            Lexical_analyzer.Analyzer();
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        Inter_graphique gui = new Inter_graphique();
+        gui.setVisible(true);
 
-        for (String[] token : Lexical_analyzer.TOKENS) {
-        System.out.println(Arrays.toString(token));    
-        }
-        
+
  
     }
 }

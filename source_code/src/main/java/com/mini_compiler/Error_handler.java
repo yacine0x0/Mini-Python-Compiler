@@ -37,7 +37,11 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
     count_error++;
     switch (ERROR_CODE) {
         case 0:
-            if (token.equals("NEWLINE")) {
+            if (token.equals("EOF")) {
+                syntax_error_message = "";
+            }
+
+           else if (token.equals("NEWLINE")) {
             syntax_error_message += "Expected something  at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);
             break;    
@@ -98,10 +102,10 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
             break;      
 
         case 9: if (token.equals("EOF")) {
-            syntax_error_message += "Expected at least one instruction in while block.\n";
+            syntax_error_message += "Expected at least one instruction in while | def | class block.\n";
 
         }  
-        else{syntax_error_message += "Expected at least one instruction in while block at line " + line_number + ", column " + column_number + ".\n";}
+        else{syntax_error_message += "Expected at least one instruction in while | def | class block at line " + line_number + ", column " + column_number + ".\n";}
             ALL_ERRORS.add(syntax_error_message);
             break;      
             
