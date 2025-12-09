@@ -6,8 +6,10 @@ public class Error_handler {
 
 private static String lexical_error_message = "Lexical Error: ";
 private static String syntax_error_message = "Syntax Error: ";
-private static ArrayList<String>  ALL_ERRORS = new ArrayList<>();
+private static ArrayList<String>  ALL_ERRORS = new ArrayList<>(); //List of errors and messages to diplay 
 private static int count_error = 0;
+
+//this method sets the error message or what to display in logs after lexical verification
 
 public static void setLexicalErrorMessage(int ERROR_CODE, String token, int line_number, int column_number) {
     lexical_error_message = "Lexical Error: ";
@@ -31,6 +33,8 @@ public static void setLexicalErrorMessage(int ERROR_CODE, String token, int line
             break;
     }
 }
+
+//this method sets the error message or what to display in logs after syntax verification
 
 public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String line_number, String column_number) {
     syntax_error_message = "Syntax Error: ";

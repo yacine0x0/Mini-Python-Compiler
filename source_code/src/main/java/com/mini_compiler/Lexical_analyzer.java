@@ -282,8 +282,8 @@ public class Lexical_analyzer {
         return "error";
     }
 
-    // --- Method to analyze the given code ---
-
+    
+    //Connecting to file or setting it up
     private static String getRuntimePath(String relativePath) {
     try {
         // Directory where the JAR is running
@@ -301,7 +301,7 @@ public class Lexical_analyzer {
     }
 }
 
-
+// --- Method to analyze the given code ---
 
     public static void Analyzer() throws FileNotFoundException, URISyntaxException {
         String lexical_unit = "";
@@ -322,10 +322,10 @@ public class Lexical_analyzer {
             Scanner scan = new Scanner(file);
             while (scan.hasNextLine()) { // extracting line by line from code.py
                 input = scan.nextLine() + " ^"; // the character ^ means the end of a line
-                index = 0;
-                count_lines++;
+                index = 0; //index of which character in the line we analyze
+                count_lines++; //counting lines
 
-                if (!ifEquals(input, " ^")) {
+                if (!ifEquals(input, " ^")) { //inserting INDENT and DEDENT for syntax analyzer
                     tc = input.charAt(index);
 
                     if (tc == ' ' || tc == '\t') {
@@ -354,6 +354,7 @@ public class Lexical_analyzer {
                     }
                     tc = input.charAt(index);
 
+                    //in order to not ignore the . in a float type variable
                     if (tc >= '0' || tc <='9') {
                         skippoint = true;
                     }
@@ -482,6 +483,7 @@ public class Lexical_analyzer {
                     }
 
                 }
+                //adding NEWLINE to indicate either end of a line or an empty line
                 if (input.charAt(index) == '^' || ifEquals(input, " ^")) {
                     line_number = count_lines;
                     column_number = index + 1 - (lexical_unit.length());
@@ -493,7 +495,7 @@ public class Lexical_analyzer {
 
             scan.close();
         } catch (FileNotFoundException e) {
-            Error_handler.setLexicalErrorMessage(FILE_NOT_FOUND_ERROR, "", 0, 0);
+            Error_handler.setLexicalErrorMessage(FILE_NOT_FOUND_ERROR, "", 0, 0); //error showed if the file isn't found
         }
 
     }

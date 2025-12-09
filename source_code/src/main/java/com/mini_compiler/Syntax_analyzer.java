@@ -15,6 +15,8 @@ public class Syntax_analyzer {
     private static List<String[]> TOKENS = Lexical_analyzer.TOKENS;
     private static List<String[]> POSITION = Lexical_analyzer.POSITION;
 
+    //syntax error codes
+
     private static final int UNEXPECTED_TOKEN = 0;
     private static final int EXPECTED_NEWLINE = 1;
     private static final int EXPECTED_PARANTHESE_CLOSING = 2;
@@ -93,12 +95,10 @@ public class Syntax_analyzer {
         statementList();
     }
 
+    //this one sets how to verify statements in order and avoid bugs and problems
+
     private static void statementList() {
-     /*   // If currentToken is null, set the safe EOF to avoid infinite loops
-        if (currentToken == null) {
-            currentToken = new String[] { "EOF", "EOF" };
-            currentPosition = new String[] { "-1", "-1" };
-        } */
+
 
         while (!ifEquals(currentToken[0], "EOF")) {
             statement();
@@ -108,6 +108,8 @@ public class Syntax_analyzer {
         }
     }
 
+    //this is one of the main methods to call, it verifies each statement of the code
+    
     private static void statement() {
         if (currentToken == null || ifEquals(currentToken[0], "EOF")) {
             return; //
@@ -148,6 +150,8 @@ public class Syntax_analyzer {
             return;
         }
     }
+
+    //This one verifies syntax for function and class declaration
 
     private static void Declaration(){
         if (ifEquals(currentToken[0], "class")) {
@@ -234,6 +238,8 @@ public class Syntax_analyzer {
         }
     }
 
+    //This method verifies syntax of parameters of either a functional call or in its declaration
+
     private static void PARAMETERS(){
         if (ifEquals(currentToken[1], "IDENTIFIER") ||
                             ifEquals(currentToken[1], "INTEGER") ||
@@ -260,6 +266,8 @@ public class Syntax_analyzer {
                                             } 
                             return;}
     }
+
+    //this one verifies the following parameters if there are more
 
     private static void PARAMETERSPRIME(){
         if (ifEquals(currentToken[0], ")")) {
@@ -297,6 +305,8 @@ public class Syntax_analyzer {
         }
     }
 
+    //method to verify assigning and variable declaration syntax
+
     private static void Assignement() {
         // current token is IDENTIFIER (lexical class in currentToken[1])
         if (ifEquals(currentToken[1], "IDENTIFIER")) {
@@ -317,8 +327,8 @@ public class Syntax_analyzer {
                             nextToken();
                         return;}
             }
-            OperatorAssign(); // expect an assignment operator (or error)
-            Expression(); // parse RHS expression
+            OperatorAssign(); 
+            Expression(); 
                if (ifEquals(currentToken[0], ";")) {
                         nextToken();
                     }
@@ -395,6 +405,8 @@ public class Syntax_analyzer {
         }
     }
 
+    //verifies factor syntax (special thing in python) example 5(12+5) the factor is (12+5)
+    //the developpement was done in reverse
     private static void Factor() {
         if (ifEquals(currentToken[0], "(")) {
             nextToken();
@@ -414,6 +426,7 @@ public class Syntax_analyzer {
 
     }
 
+    //verifies syntax of each term of an expression (equation)
     private static void Term() {
         if (currentToken == null) {
             // unexpected end
@@ -461,6 +474,7 @@ public class Syntax_analyzer {
         }
     }
 
+    //MAIN INSTRUCTION verifies while loop syntax 
     private static void Whileloop() {
         if (ifEquals(currentToken[0], "while")) {
             nextToken();
@@ -490,6 +504,8 @@ public class Syntax_analyzer {
             }
         }
     }
+
+    //verifies condition's syntax right after while (only (expression op expression) and no more than that )  
 
     private static void Condition() {
         if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "STRING") || ifEquals(currentToken[1], "INTEGER") || ifEquals(currentToken[1], "FLOAT") || ifEquals(currentToken[1], "BOOLEAN") || ifEquals(currentToken[0], "None") || ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
@@ -524,6 +540,7 @@ public class Syntax_analyzer {
         }
     }
 
+    //verifies which logical operator
     private static void CompOperator() {
         String[] operators = { "==", "!=", "<", ">", "<=", ">=", "and", "or" };
 
