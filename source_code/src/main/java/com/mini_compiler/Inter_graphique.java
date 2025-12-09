@@ -24,9 +24,28 @@ public class Inter_graphique extends JFrame {
     private static int count_error = 0;
 
      
+
+    private static String getRuntimePath(String relativePath) {
+    try {
+        // Directory where the JAR is running
+        File jarDir = new File(Lexical_analyzer.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .toURI())
+                .getParentFile();
+
+        return new File(jarDir, relativePath).getAbsolutePath();
+
+    } catch (Exception e) {
+        return relativePath; // fallback when running in IDE
+    }
+}
+
+
     private static void savingInFile(JTextArea codeArea, JTextArea outputArea){
             String input = codeArea.getText();  // Get text from JTextArea
-                Path filePath = Paths.get("executable/code.py");
+                Path filePath = Paths.get(getRuntimePath("code.py"));
 
                 try {
                         Files.write(filePath, input.getBytes());   // Write text into file
@@ -38,7 +57,8 @@ public class Inter_graphique extends JFrame {
     }
  
     private static void emptyFile(JTextArea codeArea, JTextArea outputArea){
-             Path filePath = Paths.get("executable/code.py");
+        Path filePath = Paths.get(getRuntimePath("code.py"));
+
         try {
                         Files.write(filePath, new byte[0]); // write nothing into file
                         codeArea.setText("");
@@ -134,6 +154,8 @@ public class Inter_graphique extends JFrame {
             ALL_ERRORS = Error_handler.getErrors();
             outputArea.setText("");
             updateLogs(outputArea);
+
+
            }
            else{
             outputArea.setText("COMPILED SUCCESSFULLY\n--- NO ERRORS FOUND ---\n");

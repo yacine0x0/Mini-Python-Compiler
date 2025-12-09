@@ -284,6 +284,25 @@ public class Lexical_analyzer {
 
     // --- Method to analyze the given code ---
 
+    private static String getRuntimePath(String relativePath) {
+    try {
+        // Directory where the JAR is running
+        File jarDir = new File(Lexical_analyzer.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .toURI())
+                .getParentFile();
+
+        return new File(jarDir, relativePath).getAbsolutePath();
+
+    } catch (Exception e) {
+        return relativePath; // fallback when running in IDE
+    }
+}
+
+
+
     public static void Analyzer() throws FileNotFoundException, URISyntaxException {
         String lexical_unit = "";
         String input = "";
@@ -295,7 +314,7 @@ public class Lexical_analyzer {
         int count_lines = 0;
 
         // file path for code.py
-        File file = new File("executable/code.py");
+      File file = new File(getRuntimePath("code.py"));
 
         // Scanning input from a file "code.py" located in "executable" folder
 

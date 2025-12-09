@@ -59,10 +59,15 @@ public static void setSyntaxErrorMessage(int ERROR_CODE, String token, String li
             break;}
         
 
-        case 2 : 
-        syntax_error_message += "Expected ')' around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+        case 2 : if (token.equals("NEWLINE") || token.equals("EOF")) {
+            syntax_error_message += "Expected ')' at the end of statement at line " + line_number + ", column " + column_number + ".\n";
             ALL_ERRORS.add(syntax_error_message);
-            break;    
+            break;
+        }
+        else{syntax_error_message += "Expected ')' around '" + token + "' at line " + line_number + ", column " + column_number + ".\n";
+            ALL_ERRORS.add(syntax_error_message);
+            break;}
+            
 
         case 3:
             if (token.equals("NEWLINE") || token.equals("EOF")) {

@@ -152,7 +152,13 @@ public class Syntax_analyzer {
     private static void Declaration(){
         if (ifEquals(currentToken[0], "class")) {
             nextToken();
-            if (ifEquals(currentToken[1], "IDENTIFIER")) {
+            if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+                if (ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+                     Error_handler.setSyntaxErrorMessage(SPECIAL_KEYWORD,
+                    currentToken != null ? currentToken[0] : "null",
+                    currentPosition != null ? currentPosition[0] : "-1",
+                    currentPosition != null ? currentPosition[1] : "-1");
+                }
                 nextToken();
                 if (ifEquals(currentToken[0], ":")) {
                     nextToken();
@@ -180,7 +186,13 @@ public class Syntax_analyzer {
         }
         else if (ifEquals(currentToken[0], "def")) {
             nextToken();
-                    if (ifEquals(currentToken[1], "IDENTIFIER")) {
+                    if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+                         if (ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+                            Error_handler.setSyntaxErrorMessage(SPECIAL_KEYWORD,
+                    currentToken != null ? currentToken[0] : "null",
+                    currentPosition != null ? currentPosition[0] : "-1",
+                    currentPosition != null ? currentPosition[1] : "-1");
+                         }
                         nextToken();
                         if (ifEquals(currentToken[0], "(")) {
                             nextToken();
@@ -289,8 +301,27 @@ public class Syntax_analyzer {
         // current token is IDENTIFIER (lexical class in currentToken[1])
         if (ifEquals(currentToken[1], "IDENTIFIER")) {
             nextToken(); // consume identifier
+            if (ifEquals(currentToken[0], "(")) {
+                nextToken();
+                PARAMETERS();
+                if (ifEquals(currentToken[0], ")")) {
+                    nextToken();
+                    if (ifEquals(currentToken[0], ";")) {
+                        nextToken();
+                    }
+                    return;
+                }
+                else{Error_handler.setSyntaxErrorMessage(EXPECTED_PARANTHESE_CLOSING,
+                            currentToken != null ? currentToken[0] : "null", currentPosition[0],
+                            currentPosition != null ? currentPosition[1] : "-1");
+                            nextToken();
+                        return;}
+            }
             OperatorAssign(); // expect an assignment operator (or error)
             Expression(); // parse RHS expression
+               if (ifEquals(currentToken[0], ";")) {
+                        nextToken();
+                    }
             if (ifEquals(currentToken[0], "NEWLINE") || ifEquals(currentToken[0], "EOF")) {
                 nextToken();
             } else {
@@ -330,6 +361,7 @@ public class Syntax_analyzer {
     private static void Expression() {
         
         Term();
+        Factor();
 
         // loop while current token is a binary arithmetic operator
         while (currentToken != null && (ifEquals(currentToken[0], "+") ||
@@ -347,6 +379,7 @@ public class Syntax_analyzer {
                             ifEquals(currentToken[1], "BOOLEAN") ||
                             ifEquals(currentToken[0], "None") ||
                             ifEquals(currentToken[1], "STRING") ||
+                            ifEquals(currentToken[1], "SPECIAL_KEYWORD")||
                             ifEquals(currentToken[0], "("))) {
                 Error_handler.setSyntaxErrorMessage(UNEXPECTED_TOKEN,
                         currentToken != null ? currentToken[0] : "null",
@@ -357,25 +390,27 @@ public class Syntax_analyzer {
             } else {
                 
                 Term();
+                Factor();
             }
         }
     }
 
     private static void Factor() {
-        if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "STRING") || ifEquals(currentToken[1], "INTEGER") || ifEquals(currentToken[1], "FLOAT") || ifEquals(currentToken[1], "BOOLEAN") || ifEquals(currentToken[0], "None") ) {
-            nextToken();
-            return;
-        }
-        else if (ifEquals(currentToken[0], "(")) {
+        if (ifEquals(currentToken[0], "(")) {
             nextToken();
             Expression();
             if (ifEquals(currentToken[0], ")")) {
                 nextToken();
                 return;
             }
+            else{Error_handler.setSyntaxErrorMessage(EXPECTED_PARANTHESE_CLOSING,
+                        currentToken != null ? currentToken[0] : "null",
+                        currentPosition != null ? currentPosition[0] : "-1",
+                        currentPosition != null ? currentPosition[1] : "-1");
+                // attempt to recover
+                nextToken();
+                return;}
         }
-        else{ Error_handler.setSyntaxErrorMessage(ERROR_AT_FACTOR, currentToken[0], currentPosition[0], currentPosition[1]);
-            nextToken(); return;}
 
     }
 
@@ -391,7 +426,14 @@ public class Syntax_analyzer {
                 || ifEquals(currentToken[1], "FLOAT")
                 || ifEquals(currentToken[1], "BOOLEAN")
                 || ifEquals(currentToken[0], "None")
-                || ifEquals(currentToken[1], "STRING")) {
+                || ifEquals(currentToken[1], "STRING")
+                || ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+                    if (ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+                           Error_handler.setSyntaxErrorMessage(SPECIAL_KEYWORD,
+                    currentToken != null ? currentToken[0] : "null",
+                    currentPosition != null ? currentPosition[0] : "-1",
+                    currentPosition != null ? currentPosition[1] : "-1");
+                    }
             nextToken();
             return;
         } else if (ifEquals(currentToken[0], "(")) {
@@ -450,7 +492,13 @@ public class Syntax_analyzer {
     }
 
     private static void Condition() {
-        if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "STRING") || ifEquals(currentToken[1], "INTEGER") || ifEquals(currentToken[1], "FLOAT") || ifEquals(currentToken[1], "BOOLEAN") || ifEquals(currentToken[0], "None") ) {
+        if (ifEquals(currentToken[1], "IDENTIFIER") || ifEquals(currentToken[1], "STRING") || ifEquals(currentToken[1], "INTEGER") || ifEquals(currentToken[1], "FLOAT") || ifEquals(currentToken[1], "BOOLEAN") || ifEquals(currentToken[0], "None") || ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+            if (ifEquals(currentToken[1], "SPECIAL_KEYWORD")) {
+                   Error_handler.setSyntaxErrorMessage(SPECIAL_KEYWORD,
+                    currentToken != null ? currentToken[0] : "null",
+                    currentPosition != null ? currentPosition[0] : "-1",
+                    currentPosition != null ? currentPosition[1] : "-1");
+            }
             nextToken();
             if (ifEquals(currentToken[0], "and") || ifEquals(currentToken[0], "or") || ifEquals(currentToken[0], "==")
             || ifEquals(currentToken[0], "!=") || ifEquals(currentToken[0], "<=") || ifEquals(currentToken[0], ">=") || ifEquals(currentToken[0], "<") || ifEquals(currentToken[0], ">")) {
